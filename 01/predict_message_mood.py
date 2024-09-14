@@ -1,16 +1,5 @@
 from random import uniform
 
-"""Task Description:
-    Реализовать функцию predict_message_mood, которая принимает
-    на вход строку message и пороги хорошести. Функция возвращает:
-
-    - "неуд", если предсказание модели меньше bad_threshold;
-    - "отл", если предсказание модели больше good_threshold;
-    - "норм" в остальных случаях.
-
-    Функция predict_message_mood создает экземпляр класса SomeModel 
-    и вызывает у этого экземпляра метод predict с аргументом message."""
-
 
 class SomeModel:
     def __init__(self):
