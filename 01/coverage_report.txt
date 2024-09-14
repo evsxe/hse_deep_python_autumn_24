@@ -1,0 +1,7 @@
+Name                                     Stmts   Miss   Cover   Missing
+-----------------------------------------------------------------------
+01/predict_message_mood_test.py              0      0 100.00%
+01/reading_filtering_generator.py           18      3  83.33%   29-31
+01/reading_filtering_generator_test.py      71      0 100.00%
+-----------------------------------------------------------------------
+TOTAL                                       89      3  96.63%
