@@ -1,3 +1,4 @@
+from io import StringIO
 from typing import Union, List, IO
 
 """
@@ -28,7 +29,7 @@ Task Description:
 
 
 def reading_filtering_generator(
-        filename: Union[str, IO],
+        filename: Union[str, StringIO],
         search_words: List[str],
         stop_words: List[str]
 ) -> str:
@@ -55,6 +56,6 @@ def reading_filtering_generator(
             for row in file_object:
                 yield from row_filter(row)
 
-    elif isinstance(filename, IO):
+    elif isinstance(filename, StringIO):
         for row in filename:
             yield from row_filter(row)
