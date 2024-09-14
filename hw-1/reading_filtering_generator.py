@@ -36,13 +36,14 @@ def reading_filtering_generator(
     :param filename: file name or file object.
     :param search_words: a list of words to search for.
     :param stop_words: stop word list.
-    :yields: lines from the file containing at least one word from the search list and no stop words.
+    :yields: lines from the file containing at least one word
+                from the search list and no stop words.
     """
 
     search_words = set(search_words)
     stop_words = set(stop_words)
 
-    def row_filter(row):
+    def row_filter(row: str) -> str:
         words = row.lower().split()
         exist_search_words = any(word in words for word in search_words)
         exist_stop_words = any(word in words for word in stop_words)
@@ -57,14 +58,3 @@ def reading_filtering_generator(
     elif isinstance(filename, IO):
         for row in filename:
             yield from row_filter(row)
-
-
-# if __name__ == '__main__':
-#     generator = reading_filtering_generator(
-#         filename='test_file.txt',
-#         search_words=['роза', 'азор'],
-#         stop_words=['а', 'на', 'лапу']
-#     )
-#
-#     for line in generator:
-#         print(line)

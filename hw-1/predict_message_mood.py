@@ -16,6 +16,7 @@ Task Description:
 
 class SomeModel:
     def __init__(self):
+        self.message = ''
         self.random_predict = uniform(0.0, 1.0)
 
     def predict(self, message: str) -> float:
@@ -23,6 +24,7 @@ class SomeModel:
         :param message: any string
         :return: model prediction (random number provided by the uniform module)
         """
+        self.message = message
         return self.random_predict
 
 
@@ -38,6 +40,9 @@ def predict_message_mood(
     :return: string estimate
     """
 
+    if not isinstance(message, str):
+        raise TypeError("message must be a string")
+
     predict = SomeModel().predict(
         message=message
     )
@@ -52,5 +57,7 @@ def predict_message_mood(
 
 
 assert predict_message_mood("Чапаев и пустота") == "отл"
-assert predict_message_mood("Чапаев и пустота", 0.8, 0.99) == "норм"
+assert predict_message_mood("Чапаев и пустота",
+                            0.8,
+                            0.99) == "норм"
 assert predict_message_mood("Вулкан") == "неуд"
