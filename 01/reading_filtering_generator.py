@@ -1,8 +1,7 @@
 from io import StringIO
 from typing import Union, List
 
-"""
-Task Description:
+""" Task Description:
     Есть текстовый файл, который может не помещаться в память.
     В каждой строке файла фраза или предложение: набор слов,
     разделенных пробелами (знаков препинания нет).
@@ -24,8 +23,7 @@ Task Description:
     Например, для строки из файла "а Роза упала на лапу Азора" слово поиска
     "роза" должно найтись, а "роз" или "розан" - уже нет. В случае той же строки
     "а Роза упала на лапу Азора", слова-совпадения "роза" и стоп-слова "азора"
-    исходная строка должна будет быть отброшена.
-"""
+    исходная строка должна будет быть отброшена."""
 
 
 def reading_filtering_generator(
@@ -52,7 +50,7 @@ def reading_filtering_generator(
             yield row
 
     if isinstance(filename, str):
-        with open(filename, 'r') as file_object:
+        with open(filename, 'r', encoding='UTF8') as file_object:
             for row in file_object:
                 yield from row_filter(row)
 
