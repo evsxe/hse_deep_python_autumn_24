@@ -6,6 +6,14 @@ class SomeModel:
         self.message = ''
         self.random_predict = uniform(0.0, 1.0)
 
+
+    def get_message(self) -> str:
+        """
+        :return: message used for prediction
+        """
+        return self.message
+
+
     def predict(self, message: str) -> float:
         """
         :param message: any string
