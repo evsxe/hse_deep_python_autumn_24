@@ -1,5 +1,5 @@
 from io import StringIO
-from typing import Union, List, IO
+from typing import Union, List
 
 """
 Task Description:
