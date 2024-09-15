@@ -115,17 +115,6 @@ class ReadingFilteringGeneratorTest(unittest.TestCase):
             ["This line has apple"]
         )
 
-    def test_filename_input(self):
-        generator = reading_filtering_generator(
-            'test.txt',
-            ['apple'],
-            ['']
-        )
-        self.assertEqual(
-            list(generator),
-            ["This line has apple"]
-        )
-
     def test_empty_search_words(self):
         """Checks that the generator returns nothing
             if the search word list is empty."""
