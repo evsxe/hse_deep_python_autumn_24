@@ -19,7 +19,11 @@ class TestPredictMessageMood(unittest.TestCase):
     def test_predict_message_mood_bad(self, mock_some_model):
         mock_some_model.return_value.predict.return_value = 0.2
         self.assertEqual(
-            predict_message_mood("Плохое настроение"),
+            predict_message_mood(
+                "Плохое настроение",
+                bad_thresholds=0.3,
+                good_thresholds=0.8
+            ),
             "неуд"
         )
 
@@ -27,7 +31,11 @@ class TestPredictMessageMood(unittest.TestCase):
     def test_predict_message_mood_good(self, mock_some_model):
         mock_some_model.return_value.predict.return_value = 0.9
         self.assertEqual(
-            predict_message_mood("Отличное настроение"),
+            predict_message_mood(
+                "Отличное настроение",
+                bad_thresholds=0.3,
+                good_thresholds=0.8
+            ),
             "отл"
         )
 
@@ -35,7 +43,41 @@ class TestPredictMessageMood(unittest.TestCase):
     def test_predict_message_mood_normal(self, mock_some_model):
         mock_some_model.return_value.predict.return_value = 0.5
         self.assertEqual(
-            predict_message_mood("Нормальное настроение"),
+            predict_message_mood(
+                "Нормальное настроение",
+                bad_thresholds=0.3,
+                good_thresholds=0.8
+            ),
+            "норм"
+        )
+
+    @patch('predict_message_mood.SomeModel')
+    def test_predict_message_mood_bad_thresholds_less_than_good_thresholds(
+            self,
+            mock_some_model
+    ):
+        mock_some_model.return_value.predict.return_value = 0.2
+        self.assertEqual(
+            predict_message_mood(
+                "Плохое настроение",
+                bad_thresholds=0.2,
+                good_thresholds=0.3
+            ),
+            "норм"
+        )
+
+    @patch('predict_message_mood.SomeModel')
+    def test_predict_message_mood_bad_thresholds_equal_good_thresholds(
+            self,
+            mock_some_model
+    ):
+        mock_some_model.return_value.predict.return_value = 0.5
+        self.assertEqual(
+            predict_message_mood(
+                "Нормальное настроение",
+                bad_thresholds=0.5,
+                good_thresholds=0.5
+            ),
             "норм"
         )
 
