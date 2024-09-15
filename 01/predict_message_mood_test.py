@@ -1,6 +1,7 @@
 import unittest
 
 from unittest.mock import patch
+
 from predict_message_mood import predict_message_mood, SomeModel
 
 
@@ -37,6 +38,18 @@ class TestPredictMessageMood(unittest.TestCase):
             predict_message_mood("Нормальное настроение"),
             "норм"
         )
+
+    def test_message_assignment(self):
+        model = SomeModel()
+        test_message = "Тестовая строка"
+        model.predict(message=test_message)
+        self.assertEqual(model.get_message(), test_message)
+
+    def test_get_message_returns_correct_message(self):
+        model = SomeModel()
+        test_message = "Тестовая строка"
+        model.message = test_message
+        self.assertEqual(model.get_message(), test_message)
 
 
 if __name__ == '__main__':
