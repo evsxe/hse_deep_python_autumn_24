@@ -186,6 +186,23 @@ class ReadingFilteringGeneratorTest(unittest.TestCase):
 
         self.assertEqual(list(generator), [])
 
+    def test_search_word_equal_line(self):
+        """Checks that the generator returns the string
+            if the search word is the same as the string in the file."""
+
+        file_obj = io.StringIO()
+        test_data = ["apple"]
+        file_obj.writelines(test_data)
+        file_obj.seek(0)
+
+        generator = reading_filtering_generator(
+            file_obj,
+            ['apple'],
+            []
+        )
+
+        self.assertEqual(list(generator), ["apple"])
+
 
 if __name__ == '__main__':
     unittest.main()
