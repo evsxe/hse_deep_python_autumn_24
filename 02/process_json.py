@@ -25,8 +25,8 @@ def process_json(json_str: str,
 
     try:
         json_obj = json.loads(json_str)
-    except json.decoder.JSONDecodeError:
-        raise
+    except json.decoder.JSONDecodeError as err:
+        raise err
 
     for key, value in json_obj.items():
         if key not in required_keys:

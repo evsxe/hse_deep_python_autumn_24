@@ -43,7 +43,10 @@ class TestProcessJson(unittest.TestCase):
     def test_tokens_present(self):
         json_str = '{"name": "John Doe", "age": 30}'
         tokens = ["John", "Doe"]
-        callback = lambda key, token: f"{key}: {token}"
+
+        def callback(key, token):
+            return f"{key}: {token}"
+
         process_json(
             json_str=json_str,
             tokens=tokens,
@@ -53,7 +56,10 @@ class TestProcessJson(unittest.TestCase):
     def test_tokens_not_present(self):
         json_str = '{"name": "John Doe", "age": 30}'
         tokens = ["Jane", "Smith"]
-        callback = lambda key, token: f"{key}: {token}"
+
+        def callback(key, token):
+            return f"{key}: {token}"
+
         process_json(
             json_str=json_str,
             tokens=tokens,
@@ -64,7 +70,10 @@ class TestProcessJson(unittest.TestCase):
         json_str = '{"name": "John Doe", "age": 30}'
         required_keys = ["name"]
         tokens = ["John"]
-        callback = lambda key, token: f"{key}: {token}"
+
+        def callback(key, token):
+            return f"{key}: {token}"
+
         process_json(
             json_str=json_str,
             required_keys=required_keys,
