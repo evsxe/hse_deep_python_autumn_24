@@ -13,7 +13,20 @@ def process_json(json_str: str,
     :param callback: key and token handler function
     :return:
     """
-    json_obj = json.loads(json_str)
+
+    if not isinstance(json_str, str):
+        raise TypeError("json_str must be a string")
+
+    if required_keys is None:
+        required_keys = []
+
+    if tokens is None:
+        tokens = []
+
+    try:
+        json_obj = json.loads(json_str)
+    except json.decoder.JSONDecodeError:
+        raise
 
     for key, value in json_obj.items():
         if key not in required_keys:
