@@ -1,5 +1,6 @@
 import unittest
 
+from unittest.mock import patch
 from call_logging_and_retry_decorator import retry_deco
 
 
@@ -54,6 +55,36 @@ class TestRetryDeco(unittest.TestCase):
         result = check_int(value=1)
         self.assertTrue(result)
 
+    def test_check_int_type_error(self):
+        @retry_deco(retries=1, exceptions=[TypeError])
+        def check_int(value=None):
+            if value is None:
+                raise TypeError()
+
+            return isinstance(value, int)
+
+        result = check_int(value="123")
+        self.assertFalse(result)
+
+    def test_retry_with_exceptions(self):
+        @retry_deco(retries=2, exceptions=[ValueError])
+        def check_str(value=None):
+            if value is None:
+                raise ValueError()
+
+            return isinstance(value, str)
+
+        result = check_str(value=1)
+        self.assertFalse(result)
+
+
+    def test_max_retries(self):
+        @retry_deco(retries=2)
+        def raise_error():
+            raise ValueError()
+
+        result = raise_error()
+        self.assertIsNone(result)
 
 if __name__ == '__main__':
     unittest.main()
