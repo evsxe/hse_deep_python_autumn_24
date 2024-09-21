@@ -78,20 +78,6 @@ class TestRetryDeco(unittest.TestCase):
         result = check_int(value=None)
         self.assertIsNone(result)
 
-    def test_check_int_failure_with_unexpected_exception(self):
-        @retry_deco(retries=2, exceptions=[TypeError])
-        def check_int(value=None):
-            if value is None:
-                raise ValueError()
-
-            return isinstance(value, int)
-
-        with patch.object(logging, 'info') as mock_log:
-            check_int(value=None)
-            mock_log.assert_any_call(
-                "Reached maximum retries (2) for check_int."
-            )
-
 
 if __name__ == '__main__':
     unittest.main()

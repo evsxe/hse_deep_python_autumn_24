@@ -23,7 +23,8 @@ def retry_deco(retries: int = 3,
             attempt = 1
             while attempt <= retries:
                 logging.info(
-                    "run \"%s\" with positional args = %s, keyword kwargs = %s, attempt = %s",
+                    "run \"%s\" with positional args = %s,"
+                    " keyword kwargs = %s, attempt = %s",
                     func.__name__, args, kwargs, attempt)
 
                 try:
@@ -32,13 +33,16 @@ def retry_deco(retries: int = 3,
                     return result
                 except Exception as err:
                     err_type = type(err)
-                    logging.info("exception = %s", err_type.__name__)
-                    if exceptions is not None and isinstance(err, tuple(exceptions)):
+                    logging.info("exception = %s",
+                                 err_type.__name__)
+                    if (exceptions is not None
+                            and isinstance(err, tuple(exceptions))):
                         return
                     attempt += 1
 
             logging.info(
-                "Reached maximum retries (%s) for %s.", retries, func.__name__)
+                "Reached maximum retries (%s) for %s.",
+                retries, func.__name__)
 
         return wrapper
 
