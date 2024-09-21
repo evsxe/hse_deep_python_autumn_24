@@ -4,9 +4,9 @@ Name                                          Stmts   Miss   Cover   Missing
 01/predict_message_mood_test.py                  32      0 100.00%
 01/reading_filtering_generator.py                18      3  83.33%   29-31
 01/reading_filtering_generator_test.py           71      0 100.00%
-02/call_logging_and_retry_decorator.py           23      8  65.22%   35-47
-02/call_logging_and_retry_decorator_test.py      39      3  92.31%   28, 39, 50
+02/call_logging_and_retry_decorator.py           23      1  95.65%   41
+02/call_logging_and_retry_decorator_test.py      61      5  91.80%   28, 39, 50, 61, 72
 02/process_json.py                               19      0 100.00%
 02/process_json_test.py                          41      2  95.12%   48, 61
 ----------------------------------------------------------------------------
-TOTAL                                           262     16  93.89%
+TOTAL                                           284     11  96.13%
