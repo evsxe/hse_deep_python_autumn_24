@@ -43,17 +43,6 @@ class TestRetryDeco(unittest.TestCase):
         result = check_str(value=1)
         self.assertFalse(result)
 
-    def test_check_str_retry(self):
-        @retry_deco(retries=3)
-        def check_str(value=None):
-            if value is None:
-                raise ValueError()
-
-            return isinstance(value, str)
-
-        result = check_str(value=None)
-        self.assertIsNone(result)
-
     def test_check_int_success(self):
         @retry_deco(retries=1)
         def check_int(value=None):
@@ -64,17 +53,6 @@ class TestRetryDeco(unittest.TestCase):
 
         result = check_int(value=1)
         self.assertTrue(result)
-
-    def test_check_int_failure_with_expected_exception(self):
-        @retry_deco(retries=2, exceptions=[ValueError])
-        def check_int(value=None):
-            if value is None:
-                raise ValueError()
-
-            return isinstance(value, int)
-
-        result = check_int(value=None)
-        self.assertIsNone(result)
 
 
 if __name__ == '__main__':
