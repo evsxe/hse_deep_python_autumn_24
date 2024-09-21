@@ -76,7 +76,6 @@ class TestRetryDeco(unittest.TestCase):
         result = check_str(value=1)
         self.assertFalse(result)
 
-
     def test_max_retries(self):
         @retry_deco(retries=2)
         def raise_error():
@@ -84,6 +83,7 @@ class TestRetryDeco(unittest.TestCase):
 
         result = raise_error()
         self.assertIsNone(result)
+
 
 if __name__ == '__main__':
     unittest.main()
