@@ -89,7 +89,7 @@ class TestRetryDeco(unittest.TestCase):
         with patch.object(logging, 'info') as mock_log:
             check_int(value=None)
             mock_log.assert_any_call(
-                f"Reached maximum retries (2) for check_int."
+                "Reached maximum retries (2) for check_int."
             )
 
 

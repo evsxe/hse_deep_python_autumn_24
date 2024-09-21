@@ -1,5 +1,4 @@
 import logging
-
 from typing import (
     Callable,
     Type,
@@ -24,24 +23,22 @@ def retry_deco(retries: int = 3,
             attempt = 1
             while attempt <= retries:
                 logging.info(
-                    f"run \"{func.__name__}\" with positional args = {args},"
-                    f" keyword kwargs = {kwargs}, attempt = {attempt}")
+                    "run \"%s\" with positional args = %s, keyword kwargs = %s, attempt = %s",
+                    func.__name__, args, kwargs, attempt)
 
                 try:
                     result = func(*args, **kwargs)
-                    logging.info(f"result = {result}")
+                    logging.info("result = %s", result)
                     return result
                 except Exception as err:
                     err_type = type(err)
-                    logging.info(f"exception = {err_type.__name__}")
-                    if (exceptions is not None
-                            and isinstance(err, tuple(exceptions))):
+                    logging.info("exception = %s", err_type.__name__)
+                    if exceptions is not None and isinstance(err, tuple(exceptions)):
                         return
                     attempt += 1
 
             logging.info(
-                f"Reached maximum retries ({retries}) for {func.__name__}."
-            )
+                "Reached maximum retries (%s) for %s.", retries, func.__name__)
 
         return wrapper
 
