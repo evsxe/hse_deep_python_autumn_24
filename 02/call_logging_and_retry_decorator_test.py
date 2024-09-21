@@ -1,7 +1,5 @@
-import logging
 import unittest
 
-from unittest.mock import patch
 from call_logging_and_retry_decorator import retry_deco
 
 

@@ -1,4 +1,5 @@
 import logging
+
 from typing import (
     Callable,
     Type,
@@ -31,18 +32,20 @@ def retry_deco(retries: int = 3,
                     result = func(*args, **kwargs)
                     logging.info("result = %s", result)
                     return result
-                except Exception as err:
+                except tuple(exceptions) \
+                        if exceptions \
+                        else Exception as err:
                     err_type = type(err)
                     logging.info("exception = %s",
                                  err_type.__name__)
-                    if (exceptions is not None
-                            and isinstance(err, tuple(exceptions))):
-                        return
+                    if exceptions is not None:
+                        return None
                     attempt += 1
 
             logging.info(
                 "Reached maximum retries (%s) for %s.",
                 retries, func.__name__)
+            return None
 
         return wrapper
 
