@@ -102,6 +102,48 @@ class TestCustomList(unittest.TestCase):
             "CustomList([1, 2, 3]), сумма элементов: 6"
         )
 
+    def test_eq_different_types(self):
+        custom_list = CustomList([1, 2, 3])
+        self.assertFalse(custom_list == "test")
+        self.assertFalse(custom_list == (1, 2, 3))
+        self.assertFalse(custom_list == {1, 2, 3})
+        self.assertFalse(custom_list == 5.0)
+
+    def test_ne_different_types(self):
+        custom_list = CustomList([1, 2, 3])
+        self.assertTrue(custom_list != "test")
+        self.assertTrue(custom_list != (1, 2, 3))
+        self.assertTrue(custom_list != {1, 2, 3})
+        self.assertTrue(custom_list != 5.0)
+
+    def test_lt_different_types(self):
+        custom_list = CustomList([1, 2, 3])
+        self.assertFalse(custom_list < "test")
+        self.assertFalse(custom_list < (1, 2, 3))
+        self.assertFalse(custom_list < {1, 2, 3})
+        self.assertFalse(custom_list < 5.0)
+
+    def test_le_different_types(self):
+        custom_list = CustomList([1, 2, 3])
+        self.assertFalse(custom_list <= "test")
+        self.assertFalse(custom_list <= (1, 2, 3))
+        self.assertFalse(custom_list <= {1, 2, 3})
+        self.assertFalse(custom_list <= 5.0)
+
+    def test_gt_different_types(self):
+        custom_list = CustomList([1, 2, 3])
+        self.assertFalse(custom_list > "test")
+        self.assertFalse(custom_list > (1, 2, 3))
+        self.assertFalse(custom_list > {1, 2, 3})
+        self.assertFalse(custom_list > 5.0)
+
+    def test_ge_different_types(self):
+        custom_list = CustomList([1, 2, 3])
+        self.assertFalse(custom_list >= "test")
+        self.assertFalse(custom_list >= (1, 2, 3))
+        self.assertFalse(custom_list >= {1, 2, 3})
+        self.assertFalse(custom_list >= 5.0)
+
 
 if __name__ == '__main__':
     unittest.main()
