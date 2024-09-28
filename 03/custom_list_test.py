@@ -102,5 +102,6 @@ class TestCustomList(unittest.TestCase):
             "CustomList([1, 2, 3]), сумма элементов: 6"
         )
 
+
 if __name__ == '__main__':
     unittest.main()
