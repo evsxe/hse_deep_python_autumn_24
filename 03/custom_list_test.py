@@ -97,7 +97,10 @@ class TestCustomList(unittest.TestCase):
 
     def test_str(self):
         custom_list = CustomList([1, 2, 3])
-        self.assertEqual(str(custom_list), "CustomList([1, 2, 3]), сумма элементов: 6")
+        self.assertEqual(
+            str(custom_list),
+            "CustomList([1, 2, 3]), сумма элементов: 6"
+        )
 
 if __name__ == '__main__':
     unittest.main()

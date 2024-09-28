@@ -8,10 +8,9 @@ class CustomList(list):
             result.extend(self[len(other):])
             result.extend(other[len(self):])
             return CustomList(result)
-        elif isinstance(other, int):
+        if isinstance(other, int):
             return CustomList([x + other for x in self])
-        else:
-            return NotImplemented
+        return NotImplemented
 
     def __radd__(self, other):
         return self + other
@@ -22,26 +21,23 @@ class CustomList(list):
             result.extend(self[len(other):])
             result.extend([-b for b in other[len(self):]])
             return CustomList(result)
-        elif isinstance(other, int):
+        if isinstance(other, int):
             return CustomList([x - other for x in self])
-        else:
-            return NotImplemented
+        return NotImplemented
 
     def __rsub__(self, other):
         if isinstance(other, (list, CustomList)):
             result = [a - b for a, b in zip(other, self)]
-            result.extend([a for a in other[len(self):]])
+            result.extend(other[len(self):])
             return CustomList(result)
-        elif isinstance(other, int):
+        if isinstance(other, int):
             return CustomList([other - x for x in self])
-        else:
-            return NotImplemented
+        return NotImplemented
 
     def __eq__(self, other):
         if isinstance(other, (list, CustomList)):
             return sum(self) == sum(other)
-        else:
-            return False
+        return False
 
     def __ne__(self, other):
         return not self == other
@@ -49,26 +45,22 @@ class CustomList(list):
     def __lt__(self, other):
         if isinstance(other, (list, CustomList)):
             return sum(self) < sum(other)
-        else:
-            return False
+        return False
 
     def __le__(self, other):
         if isinstance(other, (list, CustomList)):
             return sum(self) <= sum(other)
-        else:
-            return False
+        return False
 
     def __gt__(self, other):
         if isinstance(other, (list, CustomList)):
             return sum(self) > sum(other)
-        else:
-            return False
+        return False
 
     def __ge__(self, other):
         if isinstance(other, (list, CustomList)):
             return sum(self) >= sum(other)
-        else:
-            return False
+        return False
 
     def __str__(self):
         return f"CustomList({super().__str__()}), сумма элементов: {sum(self)}"
