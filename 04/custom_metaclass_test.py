@@ -36,9 +36,9 @@ class TestCustomMeta(unittest.TestCase):
                 return "Custom_by_metaclass"
 
         inst = CustomClass()
-        self.assertEqual(inst.custom_x, 50) # type: ignore
-        self.assertEqual(inst.custom_val, 99) # type: ignore
-        self.assertEqual(inst.custom_line(), 100) # type: ignore
+        self.assertEqual(inst.custom_x, 50)  # type: ignore
+        self.assertEqual(inst.custom_val, 99)  # type: ignore
+        self.assertEqual(inst.custom_line(), 100)  # type: ignore
         self.assertEqual(str(inst), "Custom_by_metaclass")
 
         with self.assertRaises(AttributeError):
