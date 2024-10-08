@@ -52,3 +52,9 @@ class Data:
 
     def __repr__(self):
         return f"Data(num={self.num}, name='{self.name}', price={self.price})"
+
+    def update_price(self, new_price: int) -> None:
+        self.price = new_price
+
+    def display_info(self) -> str:
+        return f"Data Info - Num: {self.num}, Name: {self.name}, Price: {self.price}"
