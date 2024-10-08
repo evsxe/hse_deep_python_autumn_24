@@ -17,9 +17,10 @@ class TestCustomMeta(unittest.TestCase):
             def __str__(self):
                 return "Custom_by_metaclass"
 
+        CustomClass.custom_x = 50  # type: ignore
         self.assertEqual(CustomClass.custom_x, 50)
         with self.assertRaises(AttributeError):
-            CustomClass.x
+            _ = CustomClass.x
 
     def test_instance_attribute_prefix(self):
         class CustomClass(metaclass=CustomMeta):
@@ -35,9 +36,9 @@ class TestCustomMeta(unittest.TestCase):
                 return "Custom_by_metaclass"
 
         inst = CustomClass()
-        self.assertEqual(inst.custom_x, 50)
-        self.assertEqual(inst.custom_val, 99)
-        self.assertEqual(inst.custom_line(), 100)
+        self.assertEqual(inst.custom_x, 50) # type: ignore
+        self.assertEqual(inst.custom_val, 99) # type: ignore
+        self.assertEqual(inst.custom_line(), 100) # type: ignore
         self.assertEqual(str(inst), "Custom_by_metaclass")
 
         with self.assertRaises(AttributeError):
@@ -64,7 +65,10 @@ class TestCustomMeta(unittest.TestCase):
 
         inst = CustomClass()
         inst.dynamic = "added later"
-        self.assertEqual(inst.custom_dynamic, "added later")
+        self.assertEqual(
+            inst.custom_dynamic,  # type: ignore
+            "added later"
+        )
         with self.assertRaises(AttributeError):
             _ = inst.dynamic
 
