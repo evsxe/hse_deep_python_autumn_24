@@ -1,4 +1,8 @@
 class BaseDescriptor:
+    def __init__(self) -> None:
+        self.owner = None
+        self.name = None
+
     def __set_name__(self, owner: type, name: str) -> None:
         self.owner = owner
         self.name = name
