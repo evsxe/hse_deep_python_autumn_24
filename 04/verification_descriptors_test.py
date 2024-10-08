@@ -1,77 +1,51 @@
 import unittest
-
-from verification_descriptors import (
-    FloatDescriptor,
-    NonEmptyStringDescriptor,
-    RangeDescriptor,
-    Product
-)
+from verification_descriptors import Data
 
 
-class TestDescriptors(unittest.TestCase):
+class TestData(unittest.TestCase):
 
-    def test_float_descriptor(self):
-        class TestClass:
-            value = FloatDescriptor()
+    def test_valid_data_initialization(self):
+        data_instance = Data(1, "Sample Item", 20)
+        self.assertEqual(data_instance.num, 1)
+        self.assertEqual(data_instance.name, "Sample Item")
+        self.assertEqual(data_instance.price, 20)
 
-        test_instance = TestClass()
-        test_instance.value = 3.14
-        self.assertEqual(test_instance.value, 3.14)
+    def test_invalid_num_type(self):
+        data_instance = Data(1, "Sample Item", 20)
+        with self.assertRaises(ValueError):
+            data_instance.num = "not an integer"
+
+    def test_empty_name(self):
+        data_instance = Data(1, "Sample Item", 20)
+        with self.assertRaises(ValueError):
+            data_instance.name = ""
+
+    def test_negative_price(self):
+        data_instance = Data(1, "Sample Item", 20)
+        with self.assertRaises(ValueError):
+            data_instance.price = -5
+
+    def test_valid_updates(self):
+        data_instance = Data(1, "Sample Item", 20)
+        data_instance.num = 2
+        data_instance.name = "Updated Item"
+        data_instance.price = 30
+
+        self.assertEqual(data_instance.num, 2)
+        self.assertEqual(data_instance.name, "Updated Item")
+        self.assertEqual(data_instance.price, 30)
+
+    def test_invalid_updates(self):
+        data_instance = Data(1, "Sample Item", 20)
 
         with self.assertRaises(ValueError):
-            test_instance.value = "hello"
-
-    def test_non_empty_string_descriptor(self):
-        class TestClass:
-            name = NonEmptyStringDescriptor()
-
-        test_instance = TestClass()
-        test_instance.name = "John Doe"
-        self.assertEqual(test_instance.name, "John Doe")
+            data_instance.num = 1.5
 
         with self.assertRaises(ValueError):
-            test_instance.name = ""
+            data_instance.name = None
 
         with self.assertRaises(ValueError):
-            test_instance.name = 123
-
-    def test_range_descriptor(self):
-        class TestClass:
-            quantity = RangeDescriptor(0, 10)
-
-        test_instance = TestClass()
-        test_instance.quantity = 5
-
-        self.assertEqual(test_instance.quantity, 5)
-
-        with self.assertRaises(ValueError):
-            test_instance.quantity = -1
-
-        with self.assertRaises(ValueError):
-            test_instance.quantity = 11
-
-        with self.assertRaises(ValueError):
-            test_instance.quantity = "ten"
-
-    def test_product(self):
-        product = Product(10.99, "Laptop", 5)
-        self.assertEqual(product.price, 10.99)
-        self.assertEqual(product.name, "Laptop")
-        self.assertEqual(product.quantity, 5)
-
-        with self.assertRaises(ValueError):
-            _ = Product(
-                "invalid",  # pylint: disable=all
-                "Laptop",
-                5
-            )
-
-        with self.assertRaises(ValueError):
-            _ = Product(10.99, "", 5)
-
-        with self.assertRaises(ValueError):
-            _ = Product(10.99, "Laptop", -2)
-            _ = Product(10.99, "Laptop", 105)
+            data_instance.price = 0
 
 
 if __name__ == '__main__':

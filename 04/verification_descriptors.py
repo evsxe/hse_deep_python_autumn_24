@@ -12,32 +12,39 @@ class BaseDescriptor:
         raise NotImplementedError("Subclasses must implement this method.")
 
 
-class FloatDescriptor(BaseDescriptor):
+class IntegerDescriptor(BaseDescriptor):
     def validate(self, value: any) -> bool:
-        return isinstance(value, float)
+        return isinstance(value, int)
+
+    def __repr__(self):
+        return "IntegerDescriptor"
 
 
-class NonEmptyStringDescriptor(BaseDescriptor):
+class StringDescriptor(BaseDescriptor):
     def validate(self, value: any) -> bool:
         return isinstance(value, str) and bool(value)
 
-
-class RangeDescriptor(BaseDescriptor):
-    def __init__(self, min_value: float, max_value: float) -> None:
-        self.min_value = min_value
-        self.max_value = max_value
-
-    def validate(self, value: float) -> bool:
-        return (isinstance(value, (int, float))
-                and self.min_value <= value <= self.max_value)
+    def __repr__(self):
+        return "StringDescriptor"
 
 
-class Product:
-    price: float = FloatDescriptor()
-    name: str = NonEmptyStringDescriptor()
-    quantity: int = RangeDescriptor(0, 100)
+class PositiveIntegerDescriptor(BaseDescriptor):
+    def validate(self, value: any) -> bool:
+        return isinstance(value, int) and value > 0
 
-    def __init__(self, price: float, name: str, quantity: int) -> None:
-        self.price = price
+    def __repr__(self):
+        return "PositiveIntegerDescriptor"
+
+
+class Data:
+    num = IntegerDescriptor()
+    name = StringDescriptor()
+    price = PositiveIntegerDescriptor()
+
+    def __init__(self, num: int, name: str, price: int) -> None:
+        self.num = num
         self.name = name
-        self.quantity = quantity
+        self.price = price
+
+    def __repr__(self):
+        return f"Data(num={self.num}, name='{self.name}', price={self.price})"
