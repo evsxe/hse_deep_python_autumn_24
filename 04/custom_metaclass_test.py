@@ -36,8 +36,9 @@ class TestCustomMeta(unittest.TestCase):
                 return "Custom_by_metaclass"
 
         inst = CustomClass()
+        inst.custom_x: int   # type: ignore
         self.assertEqual(
-            inst.custom_x,  # type: ignore
+            inst.custom_x,
             50
         )
         self.assertEqual(
