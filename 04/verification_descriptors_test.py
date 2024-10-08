@@ -1,6 +1,11 @@
-from verification_descriptors import FloatDescriptor, NonEmptyStringDescriptor, \
-    RangeDescriptor, Product
 import unittest
+
+from verification_descriptors import (
+    FloatDescriptor,
+    NonEmptyStringDescriptor,
+    RangeDescriptor,
+    Product
+)
 
 
 class TestDescriptors(unittest.TestCase):

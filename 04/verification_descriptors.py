@@ -28,8 +28,8 @@ class RangeDescriptor(BaseDescriptor):
         self.max_value = max_value
 
     def validate(self, value: float) -> bool:
-        return isinstance(value, (
-        int, float)) and self.min_value <= value <= self.max_value
+        return (isinstance(value, (int, float))
+                and self.min_value <= value <= self.max_value)
 
 
 class Product:
