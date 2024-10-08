@@ -41,13 +41,13 @@ class TestCustomMeta(unittest.TestCase):
         self.assertEqual(str(inst), "Custom_by_metaclass")
 
         with self.assertRaises(AttributeError):
-            inst.x
+            _ = inst.x
         with self.assertRaises(AttributeError):
-            inst.val
+            _ = inst.val
         with self.assertRaises(AttributeError):
-            inst.line()
+            _ = inst.line()
         with self.assertRaises(AttributeError):
-            inst.yyy
+            _ = inst.yyy
 
     def test_dynamic_attribute_prefix(self):
         class CustomClass(metaclass=CustomMeta):
@@ -66,7 +66,7 @@ class TestCustomMeta(unittest.TestCase):
         inst.dynamic = "added later"
         self.assertEqual(inst.custom_dynamic, "added later")
         with self.assertRaises(AttributeError):
-            inst.dynamic
+            _ = inst.dynamic
 
 
 if __name__ == '__main__':

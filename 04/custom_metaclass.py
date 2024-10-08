@@ -2,13 +2,13 @@ from typing import Any
 
 
 class CustomMeta(type):
-    def __new__(cls, name, bases, class_dict, **kwargs):
+    def __new__(mcs, name, bases, class_dict):
         custom_dict = {
             f'custom_{attr}' if not attr.startswith('__') else attr: value
             for attr, value in class_dict.items()
         }
 
-        new_class = super().__new__(cls, name, bases, custom_dict)
+        new_class = super().__new__(mcs, name, bases, custom_dict)
 
         def custom_setattr(self, key: str, value: Any):
             if not key.startswith('__'):
