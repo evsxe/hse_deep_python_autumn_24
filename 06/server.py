@@ -49,7 +49,8 @@ class Master:
         self.active_requests = 0
         self.k = k
 
-        self.workers = [Worker(self.task_queue, self.result_queue) for _ in range(num_workers)]
+        self.workers = [Worker(self.task_queue,
+                               self.result_queue) for _ in range(num_workers)]
         for worker in self.workers:
             worker.start()
 
@@ -79,8 +80,17 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-w', type=int, help="Number of Workers", required=True)
-    parser.add_argument('-k', type=int, help="Top K Frequent Words", required=True)
+
+    parser.add_argument('-w',
+                        type=int,
+                        help="Number of Workers",
+                        required=True)
+
+    parser.add_argument('-k',
+                        type=int,
+                        help="Top K Frequent Words",
+                        required=True)
+
     args = parser.parse_args()
 
     server = Master(8080, args.w, args.k)
