@@ -1,7 +1,6 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from requests import RequestException
-from client import RequestThread
 from server import Worker, Master
 
 
