@@ -58,26 +58,37 @@ class Master:
         while True:
             conn, addr = self.server_socket.accept()
             print(f"Connected {addr}")
-            try:
-                url = conn.recv(1024).decode()
-                if url:
-                    if urlparse(url).scheme in ['http', 'https']:
-                        self.active_requests += 1
-                        self.task_queue.put(url)
-                        url, top_words = self.result_queue.get()
-                        response = json.dumps(top_words)
-                        conn.sendall(response.encode())
-                        print(f"URL processed: {self.active_requests}")
-                    else:
-                        conn.sendall("Incorrect URL".encode('utf-8'))
-                        print(f"Incorrect URL: {url}")
-            except Exception as e:
-                print(f"Invalid URL: {url}: {e}")
-            finally:
-                conn.close()
+            self.handle_client(conn, addr)
+
+    def handle_client(self, conn, addr):
+        try:
+            url = conn.recv(1024).decode()
+            if url:
+                if urlparse(url).scheme in ['http', 'https']:
+                    self.active_requests += 1
+                    self.task_queue.put(url)
+                    url, top_words = self.result_queue.get()
+                    response = json.dumps(top_words)
+                    conn.sendall(response.encode())
+                    print(f"URL processed: {self.active_requests}")
+                else:
+                    conn.sendall("Incorrect URL".encode('utf-8'))
+                    print(f"Incorrect URL: {url}")
+        except ConnectionResetError as e:
+            print(f"Connection reset by client: {e}")
+        except TimeoutError as e:
+            print(f"Timeout error: {e}")
+        except socket.error as e:
+            print(f"Socket error: {e}")
+        except queue.Empty as e:
+            print(f"Result queue is empty: {e}")
+        except json.JSONDecodeError as e:
+            print(f"Error decoding JSON: {e}")
+        finally:
+            conn.close()
 
 
-if __name__ == '__main__':
+if __name__ == 'main':
     import argparse
 
     parser = argparse.ArgumentParser()
