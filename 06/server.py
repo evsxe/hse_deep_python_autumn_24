@@ -3,14 +3,12 @@ import queue
 import socket
 import threading
 import requests
-
 from collections import Counter
 from urllib.parse import urlparse
 from requests.exceptions import RequestException
 
 
 # Start: python server.py -w 10 -k 7
-
 
 class Worker(threading.Thread):
     def __init__(self, task_queue, result_queue):
@@ -66,8 +64,8 @@ class Master:
                     if urlparse(url).scheme in ['http', 'https']:
                         self.active_requests += 1
                         self.task_queue.put(url)
-                        top_words = self.result_queue.get()
-                        response = json.dumps(top_words[1])
+                        url, top_words = self.result_queue.get()
+                        response = json.dumps(top_words)
                         conn.sendall(response.encode())
                         print(f"URL processed: {self.active_requests}")
                     else:

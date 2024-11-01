@@ -15,6 +15,7 @@ class RequestThread(threading.Thread):
     def run(self):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.settimeout(5)
                 sock.connect(('127.0.0.1', 8080))
                 sock.sendall(self.url.encode())
                 data = sock.recv(4096)
