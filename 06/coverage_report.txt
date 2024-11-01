@@ -1,0 +1,14 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.7, pytest-8.3.2, pluggy-1.5.0
+rootdir: /home/runner/work/hse_deep_python_autumn_24/hse_deep_python_autumn_24
+collected 68 items
+01/predict_message_mood_test.py ........                                 [ 11%]
+01/reading_filtering_generator_test.py ...........                       [ 27%]
+02/call_logging_and_retry_decorator_test.py ........                     [ 39%]
+02/process_json_test.py ........                                         [ 51%]
+03/custom_list_test.py ...................                               [ 79%]
+04/custom_metaclass_test.py ...                                          [ 83%]
+04/verification_descriptors_test.py ......                               [ 92%]
+05/lru_cache_test.py ...                                                 [ 97%]
+06/client_server_test.py ..                                              [100%]
+============================== 68 passed in 1.00s ==============================
