@@ -1,6 +1,7 @@
 import sys
 import socket
 import threading
+
 from urllib.parse import urlparse
 
 
@@ -22,8 +23,6 @@ class RequestThread(threading.Thread):
                 self.result[self.url] = data.decode()
         except (ConnectionRefusedError, TimeoutError, OSError) as e:
             print(f"Error connecting to {self.url}: {e}")
-        except Exception as e:
-            print(f"Invalid URL: {self.url}: {e}")
 
 
 def main():

@@ -2,9 +2,9 @@ import json
 import queue
 import socket
 import threading
-import requests
 from collections import Counter
 from urllib.parse import urlparse
+import requests
 from requests.exceptions import RequestException
 
 
