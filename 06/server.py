@@ -1,11 +1,12 @@
 import json
 import queue
 import socket
-import requests
 import threading
+import requests
 
 from collections import Counter
 from urllib.parse import urlparse
+from requests.exceptions import RequestException
 
 
 # Start: python server.py -w 10 -k 7
@@ -30,11 +31,11 @@ class Worker(threading.Thread):
     @staticmethod
     def process_url(url):
         try:
-            response = requests.get(url)
+            response = requests.get(url, timeout=5)
             text = response.text
             words = Counter(text.split())
             return dict(words.most_common(7))
-        except Exception as e:
+        except RequestException as e:
             print(f"Processing error {url}: {e}")
             return {}
 
@@ -72,6 +73,8 @@ class Master:
                     else:
                         conn.sendall("Incorrect URL".encode('utf-8'))
                         print(f"Incorrect URL: {url}")
+            except Exception as e:
+                print(f"Invalid URL: {url}: {e}")
             finally:
                 conn.close()
 

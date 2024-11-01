@@ -1,12 +1,10 @@
 import sys
 import socket
 import threading
-
 from urllib.parse import urlparse
 
 
 # Start: python client.py 10 urls.txt
-
 
 class RequestThread(threading.Thread):
     def __init__(self, url, result):
@@ -21,8 +19,10 @@ class RequestThread(threading.Thread):
                 sock.sendall(self.url.encode())
                 data = sock.recv(4096)
                 self.result[self.url] = data.decode()
-        except Exception as e:
+        except (ConnectionRefusedError, TimeoutError, OSError) as e:
             print(f"Error connecting to {self.url}: {e}")
+        except Exception as e:
+            print(f"Invalid URL: {self.url}: {e}")
 
 
 def main():
@@ -33,7 +33,7 @@ def main():
     num_threads = int(sys.argv[1])
     url_file = sys.argv[2]
 
-    with open(url_file) as f:
+    with open(url_file, encoding='utf-8') as f:
         urls = [line.strip() for line in f.readlines()]
 
     threads = []
