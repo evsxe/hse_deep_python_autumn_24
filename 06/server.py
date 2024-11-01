@@ -58,9 +58,9 @@ class Master:
         while True:
             conn, addr = self.server_socket.accept()
             print(f"Connected {addr}")
-            self.handle_client(conn, addr)
+            self.handle_client(conn)
 
-    def handle_client(self, conn, addr):
+    def handle_client(self, conn):
         try:
             url = conn.recv(1024).decode()
             if url:
