@@ -90,6 +90,17 @@ class Master:
         finally:
             conn.close()
 
+    def shutdown(self):
+        print('Shutting down server...')
+
+        for _ in range(len(self.workers)):
+            self.task_queue.put(None)
+
+        for worker in self.workers:
+            worker.join()
+
+        self.server_socket.close()
+
 
 if __name__ == "__main__":
     import argparse
@@ -110,3 +121,9 @@ if __name__ == "__main__":
 
     server = Master(8080, args.w, args.k)
     server.start()
+
+    try:
+        while True:
+            pass
+    except KeyboardInterrupt:
+        server.shutdown()
