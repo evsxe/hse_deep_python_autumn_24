@@ -5,7 +5,6 @@ import threading
 from collections import Counter
 from urllib.parse import urlparse
 import requests
-from requests.exceptions import RequestException
 
 
 # Start: python server.py -w 10 -k 7
@@ -37,7 +36,7 @@ class Worker(threading.Thread):
             text = response.text
             words = Counter(text.split())
             return dict(words.most_common(7))
-        except RequestException as e:
+        except requests.exceptions.RequestException as e:
             print(f"Processing error {url}: {e}")
             return {}
 
