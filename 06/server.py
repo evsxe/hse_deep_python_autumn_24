@@ -11,20 +11,24 @@ from requests.exceptions import RequestException
 # Start: python server.py -w 10 -k 7
 
 class Worker(threading.Thread):
-    def __init__(self, task_queue, result_queue):
+    def __init__(self, task_queue, result_queue, top_k):
         super().__init__()
         self.task_queue = task_queue
         self.result_queue = result_queue
+        self.top_k = top_k
+        self.processed_urls = 0
 
     def run(self):
         while True:
             url = self.task_queue.get()
             if url is None:
                 break
-            print(f"URL Handling: {url}")
+            print(f"Worker {self.name} Handling URL: {url}")
             top_words = self.process_url(url)
             self.result_queue.put((url, top_words))
             self.task_queue.task_done()
+            self.processed_urls += 1
+            print(f"Worker {self.name} processed {self.processed_urls} URLs.")
 
     @staticmethod
     def process_url(url):
@@ -48,8 +52,8 @@ class Master:
         self.active_requests = 0
         self.k = k
 
-        self.workers = [Worker(self.task_queue,
-                               self.result_queue) for _ in range(num_workers)]
+        self.workers = [Worker(self.task_queue, self.result_queue, self.k)
+                        for _ in range(num_workers)]
         for worker in self.workers:
             worker.start()
 
@@ -88,7 +92,7 @@ class Master:
             conn.close()
 
 
-if __name__ == 'main':
+if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
