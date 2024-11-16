@@ -12,7 +12,7 @@ async def fetch_url(session, url):
             content = await response.text()
             return status, content
     except aiohttp.ClientError as e:
-        logging.error("Error fetching {}: {}".format(url, e))
+        logging.error("Error fetching {%s}: {%s}" % (url, e))
         return None, None
 
 
@@ -59,7 +59,7 @@ def main():
         with open(args.url_file, "r", encoding='utf-8') as f:
             urls = f.readlines()
     except FileNotFoundError:
-        logging.error("File {} not found.".format(args.url_file))
+        logging.error("File {%s} not found." % args.url_file)
         return
 
     try:
