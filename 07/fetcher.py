@@ -1,7 +1,8 @@
-import asyncio
-import aiohttp
 import argparse
+
+import asyncio
 import logging
+import aiohttp
 
 
 async def fetch_url(session, url):
@@ -31,8 +32,6 @@ async def fetch_one_url(session, url, semaphore):
         url = url.strip()
         if url:
             return await fetch_url(session, url)
-        else:
-            return None, None
 
 
 def main():
@@ -57,7 +56,7 @@ def main():
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
     try:
-        with open(args.url_file, "r") as f:
+        with open(args.url_file, "r", encoding='utf-8') as f:
             urls = f.readlines()
     except FileNotFoundError:
         logging.error(f"File {args.url_file} not found.")
@@ -73,7 +72,7 @@ def main():
     )
     loop.close()
 
-    for i, (status, content) in enumerate(results):
+    for i, (status, _) in enumerate(results):
         if status:
             print(f"URL: {urls[i].strip()}")
             print(f"Status: {status}")

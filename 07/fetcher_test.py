@@ -25,7 +25,7 @@ class TestFetcher(unittest.IsolatedAsyncioTestCase):
         urls = ["url1", "", "url3"]
         results = await fetch_urls(urls, concurrent_requests=2)
         self.assertEqual(len(results), 3)
-        self.assertEqual(results[1], (None, None))
+        self.assertEqual(results[1], None)
 
 
 if __name__ == '__main__':
