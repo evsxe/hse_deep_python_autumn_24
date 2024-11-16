@@ -1,6 +1,6 @@
-import argparse
 import asyncio
 import aiohttp
+import argparse
 import logging
 
 
@@ -29,27 +29,35 @@ async def fetch_urls(urls, concurrent_requests):
 async def fetch_one_url(session, url, semaphore):
     async with semaphore:
         url = url.strip()
-        return await fetch_url(session, url) if url else None, None
+        if url:
+            return await fetch_url(session, url)
+        else:
+            return None, None
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Asynchronous URL fetching.")
-
+    parser = argparse.ArgumentParser(
+        description="Asynchronous URL fetching."
+    )
     parser.add_argument(
-        "-c", "--concurrent", type=int, default=10,
+        "-c",
+        "--concurrent",
+        type=int,
+        default=10,
         help="Number of concurrent requests (default: 10)."
     )
-
-    parser.add_argument("url_file", type=str,
-                        help="Path to the file containing URLs.")
-
+    parser.add_argument(
+        "url_file",
+        type=str,
+        help="Path to the file containing URLs."
+    )
     args = parser.parse_args()
-
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s - %(levelname)s - %(message)s')
-
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
     try:
-        with open(args.url_file, "r", encoding="utf-8") as f:
+        with open(args.url_file, "r") as f:
             urls = f.readlines()
     except FileNotFoundError:
         logging.error(f"File {args.url_file} not found.")
@@ -60,9 +68,9 @@ def main():
     except RuntimeError:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-
-    results = loop.run_until_complete(fetch_urls(urls, args.concurrent))
-
+    results = loop.run_until_complete(
+        fetch_urls(urls, args.concurrent)
+    )
     loop.close()
 
     for i, (status, content) in enumerate(results):
