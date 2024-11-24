@@ -1,40 +1,31 @@
-import cProfile
 import pstats
+import cProfile
 
-from collections import defaultdict
-
-profile_data = defaultdict(list)
+from functools import wraps
 
 
 def profile_deco(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         pr = cProfile.Profile()
         pr.enable()
         result = func(*args, **kwargs)
         pr.disable()
-        profile_data[func].append(pr)
+        wrapper.profile_data.append(pr)
         return result
 
+    wrapper.profile_data = []
+
+    def print_stat():
+        if not wrapper.profile_data:
+            print("Function has not been called yet.")
+            return
+        p = pstats.Stats(
+            wrapper.profile_data[0])
+        for profiler in wrapper.profile_data[1:]:
+            p.add(profiler)
+        p.strip_dirs().sort_stats('cumulative').print_stats()
+
+    wrapper.print_stat = print_stat
+
     return wrapper
-
-
-@profile_deco
-def add(a, b):
-    return a + b
-
-
-@profile_deco
-def sub(a, b):
-    return a - b
-
-
-add(1, 2)
-add(4, 5)
-sub(4, 5)
-
-for func, profilers in profile_data.items():
-    p = pstats.Stats(profilers[0])
-    for profiler in profilers[1:]:
-        p.add(profiler)
-    p.strip_dirs().sort_stats('cumulative').print_stats()
-    print("-" * 20)
