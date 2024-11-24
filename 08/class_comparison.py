@@ -10,6 +10,9 @@ class MyObject:
     def __init__(self, value):
         self.value = value
 
+    def __str__(self):
+        return f"MyObject(value={self.value})"
+
 
 class RegularClass:
     def __init__(self, a, b, c, d, e):
@@ -18,6 +21,10 @@ class RegularClass:
         self.c = c
         self.d = d
         self.e = e
+
+    def __str__(self):
+        return (f"RegularClass(a={self.a}, b={self.b},"
+                f" c={self.c}, d={self.d}, e={self.e})")
 
 
 class SlottedClass:
@@ -30,6 +37,10 @@ class SlottedClass:
         self.d = d
         self.e = e
 
+    def __str__(self):
+        return (f"SlottedClass(a={self.a}, b={self.b},"
+                f" c={self.c}, d={self.d}, e={self.e})")
+
 
 class WeakRefClass:
     def __init__(self, a, b, c, d, e):
@@ -38,6 +49,10 @@ class WeakRefClass:
         self.c = weakref.ref(c)
         self.d = weakref.ref(d)
         self.e = weakref.ref(e)
+
+    def __str__(self):
+        return (f"WeakRefClass(a={self.a}, b={self.b},"
+                f" c={self.c}, d={self.d}, e={self.e})")
 
 
 num_instances = 10_000

@@ -14,18 +14,22 @@ def profile_class(cls, num_iterations=10_000):
 
     if cls == WeakRefClass:
         def weak_ref_creation():
-            for i in range(num_iterations):
+            for _ in range(num_iterations):
                 cls(*my_objects)
 
-        cProfile.runctx('weak_ref_creation()', globals(), locals(),
-                        f'{cls.__name__}_profile')
+        cProfile.runctx(
+            'weak_ref_creation()', globals(), locals(),
+            f'{cls.__name__}_profile'
+        )  # pylint: disable=all
     else:
         def regular_creation():
-            for i in range(num_iterations):
+            for _ in range(num_iterations):
                 cls(1, 2, 3, 4, 5)
 
-        cProfile.runctx('regular_creation()', globals(), locals(),
-                        f'{cls.__name__}_profile')
+        cProfile.runctx(
+            'regular_creation()', globals(), locals(),
+            f'{cls.__name__}_profile'
+        )  # pylint: disable=all
 
     snapshot = tracemalloc.take_snapshot()
     tracemalloc.stop()
