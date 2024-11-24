@@ -1,30 +1,44 @@
 import pstats
 import cProfile
+import tracemalloc
 
 from class_comparison import (RegularClass,
                               SlottedClass,
-                              WeakRefClass)  # pylint: disable=all
+                              WeakRefClass,
+                              MyObject)
 
-cProfile.run(
-    'for i in range(10000): RegularClass(1,2,3,4,5)',
-    'regular_profile'
-)
 
-cProfile.run(
-    'for i in range(10000): SlottedClass(1,2,3,4,5)',
-    'slotted_profile'
-)
+def profile_class(cls, num_iterations=10_000):
+    my_objects = [MyObject(i + 1) for i in range(5)]
+    tracemalloc.start()
 
-cProfile.run(
-    'for i in range(10000): WeakRefClass(1,2,3,4,5)',
-    'weak_ref_profile'
-)
+    if cls == WeakRefClass:
+        def weak_ref_creation():
+            for i in range(num_iterations):
+                cls(*my_objects)
 
-p = pstats.Stats('regular_profile')
-p.strip_dirs().sort_stats('cumulative').print_stats(20)
+        cProfile.runctx('weak_ref_creation()', globals(), locals(),
+                        f'{cls.__name__}_profile')
+    else:
+        def regular_creation():
+            for i in range(num_iterations):
+                cls(1, 2, 3, 4, 5)
 
-p = pstats.Stats('slotted_profile')
-p.strip_dirs().sort_stats('cumulative').print_stats(20)
+        cProfile.runctx('regular_creation()', globals(), locals(),
+                        f'{cls.__name__}_profile')
 
-p = pstats.Stats('weak_ref_profile')
-p.strip_dirs().sort_stats('cumulative').print_stats(20)
+    snapshot = tracemalloc.take_snapshot()
+    tracemalloc.stop()
+    top_stats = snapshot.statistics('lineno')
+
+    print(f"\nMemory usage for {cls.__name__}:")
+    for stat in top_stats[:10]:
+        print(stat)
+
+    p = pstats.Stats(f'{cls.__name__}_profile')
+    p.strip_dirs().sort_stats('cumulative').print_stats(20)
+
+
+profile_class(RegularClass)
+profile_class(SlottedClass)
+profile_class(WeakRefClass)

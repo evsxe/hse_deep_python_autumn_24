@@ -1,5 +1,7 @@
 import gc
 import time
+import weakref
+import tracemalloc
 
 from decorator import profile_deco
 
@@ -31,22 +33,30 @@ class SlottedClass:
 
 class WeakRefClass:
     def __init__(self, a, b, c, d, e):
-        self.a = a
-        self.b = b
-        self.c = c
-        self.d = d
-        self.e = e
+        self.a = weakref.ref(a)
+        self.b = weakref.ref(b)
+        self.c = weakref.ref(c)
+        self.d = weakref.ref(d)
+        self.e = weakref.ref(e)
 
 
-num_instances = 100_000
+num_instances = 10_000
 
 my_objects = [MyObject(i + 1) for i in range(5)]
 
 
-def timeit(func, *args):
+def timeit(func, *args, memory_profile=False):
     start = time.perf_counter()
-    func(*args)
+    tracemalloc.start()
+    _ = func(*args)
     end = time.perf_counter()
+    snapshot = tracemalloc.take_snapshot()
+    tracemalloc.stop()
+    if memory_profile:
+        top_stats = snapshot.statistics('lineno')
+        print("Memory usage:")
+        for stat in top_stats[:10]:
+            print(stat)
     return end - start
 
 
@@ -62,36 +72,27 @@ weak_ref_creation_time = timeit(
     lambda: [WeakRefClass(*my_objects) for _ in range(num_instances)]
 )
 
-
-@profile_deco
-def get_regular_instances():
-    return [RegularClass(*my_objects) for _ in range(num_instances)]
-
-
-@profile_deco
-def get_slotted_instances():
-    return [SlottedClass(*my_objects) for _ in range(num_instances)]
-
-
-@profile_deco
-def get_weak_ref_instances():
-    return [WeakRefClass(*my_objects) for _ in range(num_instances)]
-
-
-regular_instances = get_regular_instances()
-slotted_instances = get_slotted_instances()
-weak_ref_instances = get_weak_ref_instances()
+regular_instances = [RegularClass(*my_objects) for _ in range(num_instances)]
+slotted_instances = [SlottedClass(*my_objects) for _ in range(num_instances)]
+weak_ref_instances = [WeakRefClass(*my_objects) for _ in range(num_instances)]
 
 regular_access_time = timeit(
-    lambda: [instance.a.value + 1 for instance in regular_instances]
+    lambda: [
+        instance.a.value + 1 for instance in regular_instances
+    ]
 )
 
 slotted_access_time = timeit(
-    lambda: [instance.a.value + 1 for instance in slotted_instances]
+    lambda: [
+        instance.a.value + 1 for instance in slotted_instances
+    ]
 )
 
 weak_ref_access_time = timeit(
-    lambda: [instance.a.value + 1 for instance in weak_ref_instances]
+    lambda: [
+        instance.a().value + 1 if instance.a() else 0 for instance in
+        weak_ref_instances
+    ]
 )
 
 print(f'Number of instances: {num_instances}')
@@ -101,6 +102,22 @@ print(f"WeakRefClass creation time: {weak_ref_creation_time:.4f} sec")
 print(f"RegularClass attribute access time: {regular_access_time:.4f} sec")
 print(f"SlottedClass attribute access time: {slotted_access_time:.4f} sec")
 print(f"WeakRefClass attribute access time: {weak_ref_access_time:.4f} sec")
+
+get_regular_instances = profile_deco(
+    lambda: [RegularClass(*my_objects) for _ in range(num_instances)]
+)
+
+get_slotted_instances = profile_deco(
+    lambda: [SlottedClass(*my_objects) for _ in range(num_instances)]
+)
+
+get_weak_ref_instances = profile_deco(
+    lambda: [WeakRefClass(*my_objects) for _ in range(num_instances)]
+)
+
+get_regular_instances()
+get_slotted_instances()
+get_weak_ref_instances()
 
 get_regular_instances.print_stat()
 get_slotted_instances.print_stat()
