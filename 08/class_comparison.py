@@ -11,6 +11,10 @@ class MyObject:  # pylint: disable=all
         self.value = value
 
 
+NUM_INSTANCES = 10_000
+my_objects = [MyObject(i + 1) for i in range(5)]
+
+
 class RegularClass:  # pylint: disable=all
     def __init__(self, a, b, c, d, e):
         self.a = a
@@ -40,11 +44,6 @@ class WeakRefClass:  # pylint: disable=all
         self.e = weakref.ref(e)
 
 
-NUM_INSTANCES = 10_000
-
-my_objects = [MyObject(i + 1) for i in range(5)]
-
-
 def timeit(func, *args, memory_profile=False):
     start = time.perf_counter()
     tracemalloc.start()
@@ -62,15 +61,15 @@ def timeit(func, *args, memory_profile=False):
 
 regular_creation_time = timeit(
     lambda: [RegularClass(*my_objects) for _ in range(NUM_INSTANCES)]
-)  # pylint: disable=all
+)
 
 slotted_creation_time = timeit(
     lambda: [SlottedClass(*my_objects) for _ in range(NUM_INSTANCES)]
-)  # pylint: disable=all
+)
 
 weak_ref_creation_time = timeit(
     lambda: [WeakRefClass(*my_objects) for _ in range(NUM_INSTANCES)]
-)  # pylint: disable=all
+)
 
 regular_instances = [RegularClass(*my_objects) for _ in range(NUM_INSTANCES)]
 slotted_instances = [SlottedClass(*my_objects) for _ in range(NUM_INSTANCES)]
@@ -80,20 +79,20 @@ regular_access_time = timeit(
     lambda: [
         instance.a.value + 1 for instance in regular_instances
     ]
-)  # pylint: disable=all
+)
 
 slotted_access_time = timeit(
     lambda: [
         instance.a.value + 1 for instance in slotted_instances
     ]
-)  # pylint: disable=all
+)
 
 weak_ref_access_time = timeit(
     lambda: [
         instance.a().value + 1 if instance.a() else 0 for instance in
         weak_ref_instances
     ]
-)  # pylint: disable=all
+)
 
 print(f'Number of instances: {NUM_INSTANCES}')
 print(f"RegularClass creation time: {regular_creation_time:.4f} sec")
@@ -105,15 +104,15 @@ print(f"WeakRefClass attribute access time: {weak_ref_access_time:.4f} sec")
 
 get_regular_instances = profile_deco(
     lambda: [RegularClass(*my_objects) for _ in range(NUM_INSTANCES)]
-)  # pylint: disable=all
+)
 
 get_slotted_instances = profile_deco(
     lambda: [SlottedClass(*my_objects) for _ in range(NUM_INSTANCES)]
-)  # pylint: disable=all
+)
 
 get_weak_ref_instances = profile_deco(
     lambda: [WeakRefClass(*my_objects) for _ in range(NUM_INSTANCES)]
-)  # pylint: disable=all
+)
 
 get_regular_instances()
 get_slotted_instances()
