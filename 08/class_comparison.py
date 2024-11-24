@@ -11,7 +11,7 @@ class MyObject:  # pylint: disable=all
         self.value = value
 
 
-class RegularClass: # pylint: disable=all
+class RegularClass:  # pylint: disable=all
     def __init__(self, a, b, c, d, e):
         self.a = a
         self.b = b
@@ -20,7 +20,7 @@ class RegularClass: # pylint: disable=all
         self.e = e
 
 
-class SlottedClass: # pylint: disable=all
+class SlottedClass:  # pylint: disable=all
     __slots__ = ['a', 'b', 'c', 'd', 'e']
 
     def __init__(self, a, b, c, d, e):
@@ -31,7 +31,7 @@ class SlottedClass: # pylint: disable=all
         self.e = e
 
 
-class WeakRefClass: # pylint: disable=all
+class WeakRefClass:  # pylint: disable=all
     def __init__(self, a, b, c, d, e):
         self.a = weakref.ref(a)
         self.b = weakref.ref(b)
