@@ -11,10 +11,6 @@ class MyObject:  # pylint: disable=all
         self.value = value
 
 
-NUM_INSTANCES = 10_000
-my_objects = [MyObject(i + 1) for i in range(5)]
-
-
 class RegularClass:  # pylint: disable=all
     def __init__(self, a, b, c, d, e):
         self.a = a
@@ -44,6 +40,10 @@ class WeakRefClass:  # pylint: disable=all
         self.e = weakref.ref(e)
 
 
+NUM_INSTANCES = 10_000
+my_objects = [MyObject(i + 1) for i in range(5)]
+
+
 def timeit(func, *args, memory_profile=False):
     start = time.perf_counter()
     tracemalloc.start()
@@ -60,37 +60,47 @@ def timeit(func, *args, memory_profile=False):
 
 
 regular_creation_time = timeit(
-    lambda: [RegularClass(*my_objects) for _ in range(NUM_INSTANCES)]
+    lambda: [RegularClass(
+        *[MyObject(i + 1) for i in range(5)]) for _ in range(NUM_INSTANCES)]
 )
 
 slotted_creation_time = timeit(
-    lambda: [SlottedClass(*my_objects) for _ in range(NUM_INSTANCES)]
+    lambda: [SlottedClass(
+        *[MyObject(i + 1) for i in range(5)]) for _ in range(NUM_INSTANCES)]
 )
 
 weak_ref_creation_time = timeit(
-    lambda: [WeakRefClass(*my_objects) for _ in range(NUM_INSTANCES)]
+    lambda: [WeakRefClass(
+        *[MyObject(i + 1) for i in range(5)]) for _ in range(NUM_INSTANCES)]
 )
-
-regular_instances = [RegularClass(*my_objects) for _ in range(NUM_INSTANCES)]
-slotted_instances = [SlottedClass(*my_objects) for _ in range(NUM_INSTANCES)]
-weak_ref_instances = [WeakRefClass(*my_objects) for _ in range(NUM_INSTANCES)]
 
 regular_access_time = timeit(
     lambda: [
-        instance.a.value + 1 for instance in regular_instances
+        instance.a.value + 1 for instance in [
+            RegularClass(
+                *[MyObject(i + 1) for i in range(5)]
+            ) for _ in range(NUM_INSTANCES)
+        ]
     ]
 )
 
 slotted_access_time = timeit(
     lambda: [
-        instance.a.value + 1 for instance in slotted_instances
+        instance.a.value + 1 for instance in [
+            SlottedClass(
+                *[MyObject(i + 1) for i in range(5)]
+            ) for _ in range(NUM_INSTANCES)
+        ]
     ]
 )
 
 weak_ref_access_time = timeit(
     lambda: [
-        instance.a().value + 1 if instance.a() else 0 for instance in
-        weak_ref_instances
+        instance.a().value + 1 if instance.a() else 0 for instance in [
+            WeakRefClass(
+                *[MyObject(i + 1) for i in range(5)]
+            ) for _ in range(NUM_INSTANCES)
+        ]
     ]
 )
 
@@ -122,5 +132,5 @@ get_regular_instances.print_stat()
 get_slotted_instances.print_stat()
 get_weak_ref_instances.print_stat()
 
-del regular_instances, slotted_instances, weak_ref_instances, my_objects
+# del regular_instances, slotted_instances, weak_ref_instances, my_objects
 gc.collect()
