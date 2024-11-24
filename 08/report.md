@@ -2,7 +2,7 @@
 
 ### 1. Сравнение использования weakref и слотов
 
-![]()
+![](https://github.com/evsxe/hse_deep_python_autumn_24/blob/hw-8/08/images/1.png)
 
 ### 2. Профилирование
 
