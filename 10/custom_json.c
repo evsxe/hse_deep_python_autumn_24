@@ -5,215 +5,157 @@
 #include <stdbool.h>
 #include <string.h>
 
+PyObject* parse_json_string(const char* json_str);
 
-PyObject* custom_json_loads(PyObject* self, PyObject* args)
-{
-    char* str_p;
+PyObject* custom_json_loads(PyObject* self, PyObject* args) {
+    const char* json_str;
 
-    if (!PyArg_ParseTuple(args, "s", &str_p)){
-        PyErr_Format(PyExc_TypeError, "Expected JSON object");
+    if (!PyArg_ParseTuple(args, "s", &json_str)) {
+        PyErr_SetString(PyExc_TypeError, "Expected a JSON string");
         return NULL;
     }
 
-    if (*str_p != '{') {
-        PyErr_SetString(PyExc_ValueError, "Invalid JSON object: no opening parenthesis");
+    return parse_json_string(json_str);
+}
+
+
+PyObject* parse_json_string(const char* json_str) {
+    if (*json_str != '{') {
+        PyErr_SetString(PyExc_ValueError, "Invalid JSON: missing opening brace");
         return NULL;
     }
 
-    PyObject *dict = NULL;
-
-    if (!(dict = PyDict_New())) {
-        PyErr_SetString(PyExc_MemoryError, "Failed to create Dict object");
+    PyObject* dict = PyDict_New();
+    if (!dict) {
+        PyErr_SetString(PyExc_MemoryError, "Failed to create dictionary");
         return NULL;
     }
 
-    str_p++;
+    json_str++; // Skip '{'
 
-    PyObject* value = NULL;
-    PyObject* key = NULL;
+    while (*json_str != '\0' && *json_str != '}') {
+        while (*json_str == ' ') json_str++; // Skip whitespace
 
-    while (*str_p != '\0' && *str_p != '}') {
-
-         // find key
-        if (*str_p == ' '){
-            str_p++;
-            continue;
-        }
-
-        if (*str_p != '"'){
-            PyErr_SetString(PyExc_ValueError, "Failed to build string for key");
+        if (*json_str != '"') {
+            PyErr_SetString(PyExc_ValueError, "Invalid JSON: expected key");
             Py_DECREF(dict);
             return NULL;
         }
 
-        str_p++;
+        json_str++; // Skip '"'
 
-        char* start_key = str_p;
-        long size_key = 0;
-
-        while (*str_p != '\0' && *str_p != '"'){
-            str_p++;
-            size_key++;
+        const char* key_start = json_str;
+        size_t key_len = 0;
+        while (*json_str != '\0' && *json_str != '"') {
+            json_str++;
+            key_len++;
         }
 
-        if (*str_p == '\0' || *str_p != '"') {
-            PyErr_SetString(PyExc_ValueError, "Failed to build string for key");
+        if (*json_str != '"') {
+            PyErr_SetString(PyExc_ValueError, "Invalid JSON: unterminated key");
             Py_DECREF(dict);
             return NULL;
         }
 
-        if (!(key = Py_BuildValue("s#", start_key, size_key))) {
-            PyErr_SetString(PyExc_ValueError, "Failed to build string for key");
+        PyObject* key = PyUnicode_FromStringAndSize(key_start, key_len);
+        if (!key) {
+            PyErr_SetString(PyExc_ValueError, "Failed to create key");
             Py_DECREF(dict);
             return NULL;
         }
 
-        // find value
-        str_p++;
+        json_str++; // Skip '"'
 
-        while (*str_p != '\0' && *str_p == ' '){
-            str_p++;
-        }
+        while (*json_str == ' ') json_str++; // Skip whitespace
 
-        if (*str_p != ':'){
-            PyErr_SetString(PyExc_ValueError, "Invalid JSON object: semicolon not found");
+        if (*json_str != ':') {
+            PyErr_SetString(PyExc_ValueError, "Invalid JSON: missing colon");
+            Py_DECREF(key);
             Py_DECREF(dict);
             return NULL;
         }
-        str_p++;
 
-        while (*str_p != '\0' && *str_p == ' '){
-            str_p++;
-        }
+        json_str++; // Skip ':'
 
-        if (*str_p == '"'){
-            str_p++;
+        while (*json_str == ' ') json_str++; // Skip whitespace
 
-            char* start_value = str_p;
-            long size_value = 0;
-
-            while (*str_p != '\0' && *str_p != '"'){
-                str_p++;
-                size_value++;
+        PyObject* value = NULL;
+        if (*json_str == '"') {
+            json_str++; // Skip '"'
+            const char* value_start = json_str;
+            size_t value_len = 0;
+            while (*json_str != '\0' && *json_str != '"') {
+                json_str++;
+                value_len++;
             }
-
-            if (*str_p == '\0' || *str_p != '"') {
-                PyErr_SetString(PyExc_ValueError, "Failed to build string for value");
+            if (*json_str != '"') {
+                PyErr_SetString(PyExc_ValueError, "Invalid JSON: unterminated string value");
+                Py_DECREF(key);
                 Py_DECREF(dict);
                 return NULL;
             }
-
-            if (!(value = Py_BuildValue("s#", start_value, size_value))) {
-                PyErr_SetString(PyExc_ValueError, "Failed to build string for value");
-                Py_DECREF(dict);
-                return NULL;
-            }
-
-            str_p++;
-
-        }
-        else if ((*str_p >= '0' && *str_p <= '9') || (*str_p == '-')){
-            long l_value = 0;
-            bool flag = false;
-
-            if (*str_p == '-'){
-                flag = true;
-                str_p++;
-            }
-
-            while (*str_p != '\0' && *str_p >= '0' && *str_p <= '9'){
-                l_value = l_value * 10 + ((int)*str_p - (int)'0');
-                str_p++;
-            }
-
-            if (*str_p == '\0') {
-                PyErr_SetString(PyExc_ValueError, "Failed to build integer for value");
-                Py_DECREF(dict);
-                return NULL;
-            }
-
-            if (flag == true){
-                l_value *= -1;
-            }
-
-            if (!(value = Py_BuildValue("l", l_value))) {
-                PyErr_SetString(PyExc_ValueError, "Failed to build integer for value");
-                Py_DECREF(dict);
-                return NULL;
-            }
-
-        }
-        else{
-            PyErr_SetString(PyExc_ValueError, "Failed to build value");
+            value = PyUnicode_FromStringAndSize(value_start, value_len);
+            json_str++; // Skip '"'
+        } else if ((*json_str >= '0' && *json_str <= '9') || *json_str == '-') {
+            long num = strtol(json_str, (char**)&json_str, 10);
+            value = PyLong_FromLong(num);
+        } else {
+            PyErr_SetString(PyExc_ValueError, "Invalid JSON: unexpected value type");
+            Py_DECREF(key);
             Py_DECREF(dict);
             return NULL;
         }
 
-        if (PyDict_SetItem(dict, key, value) < 0) {
-            PyErr_Format(PyExc_TypeError, "Failed to set item");
+        if (!value || PyDict_SetItem(dict, key, value) < 0) {
+            PyErr_SetString(PyExc_ValueError, "Failed to set dictionary item");
+            Py_DECREF(key);
+            Py_DECREF(value);
             Py_DECREF(dict);
             return NULL;
         }
 
-       Py_DECREF(key);
-       Py_DECREF(value);
+        Py_DECREF(key);
+        Py_DECREF(value);
 
-       while (*str_p != '\0' && *str_p == ' '){
-            str_p++;
-            }
+        while (*json_str == ' ') json_str++; // Skip whitespace
 
-       if (*str_p == '}'){
-           continue;
-       }
-
-       if (*str_p == '\0' || *str_p != ',') {
-           PyErr_SetString(PyExc_ValueError, "Invalid JSON object: comma not found");
-           Py_DECREF(dict);
-           return NULL;
-       }
-       str_p++;
+        if (*json_str == '}') break;
+        if (*json_str != ',') {
+            PyErr_SetString(PyExc_ValueError, "Invalid JSON: missing comma");
+            Py_DECREF(dict);
+            return NULL;
+        }
+        json_str++; // Skip ','
     }
 
-    if (*str_p == '\0' || *str_p != '}') {
-        PyErr_SetString(PyExc_ValueError, "Invalid JSON object: no closing parenthesis");
+    if (*json_str != '}') {
+        PyErr_SetString(PyExc_ValueError, "Invalid JSON: missing closing brace");
         Py_DECREF(dict);
         return NULL;
-
     }
 
     return dict;
-};
+}
 
-static PyObject* custom_json_dumps(PyObject* self, PyObject* args)
- {
+
+static PyObject* custom_json_dumps(PyObject* self, PyObject* args) {
     PyObject* obj;
-
     if (!PyArg_ParseTuple(args, "O", &obj) || !PyDict_Check(obj)) {
-        PyErr_SetString(PyExc_TypeError, "Invalid argument");
+        PyErr_SetString(PyExc_TypeError, "Expected a dictionary");
         return NULL;
     }
 
     PyObject* items = PyDict_Items(obj);
-
-    if (items == NULL) {
+    if (!items) {
         PyErr_SetString(PyExc_MemoryError, "Failed to get dictionary items");
         return NULL;
     }
 
-    long num_items = PyList_Size(items);
-    size_t size = 4;
+    Py_ssize_t num_items = PyList_GET_SIZE(items);
+    size_t size = 2; //For {}
 
-    // find size of json-str
-    for (long i = 0; i < num_items; i++) {
-
+    for (Py_ssize_t i = 0; i < num_items; i++) {
         PyObject* item = PyList_GetItem(items, i);
-
-        if (item == NULL) {
-            PyErr_SetString(PyExc_RuntimeError, "Failed to get item from list");
-            Py_DECREF(items);
-            return NULL;
-        }
-
         PyObject* key = PyTuple_GetItem(item, 0);
         PyObject* value = PyTuple_GetItem(item, 1);
 
@@ -222,83 +164,72 @@ static PyObject* custom_json_dumps(PyObject* self, PyObject* args)
             Py_DECREF(items);
             return NULL;
         }
+        const char* key_str = PyUnicode_AsUTF8(key);
+        size += strlen(key_str) + 3; //"key":
 
-        char* key_str = PyUnicode_AsUTF8(key);
-        size += strlen(key_str) + 4;
 
         if (PyLong_Check(value)) {
-            size += 25;
-        }
-        else if (PyUnicode_Check(value)){
+            char buf[25];
+            snprintf(buf, sizeof(buf), "%ld", PyLong_AsLong(value));
+            size += strlen(buf);
+        } else if (PyUnicode_Check(value)) {
             const char* value_str = PyUnicode_AsUTF8(value);
-            size += strlen(value_str) + 2;
-        }
-        else{
-            PyErr_SetString(PyExc_TypeError, "Value must be a number or a string");
+            size += strlen(value_str) + 2; //""
+        } else {
+            PyErr_SetString(PyExc_TypeError, "Value must be a number or string");
             Py_DECREF(items);
             return NULL;
         }
+        if (i < num_items -1) size++; //for ,
     }
-    // writing json-str
-    char* json = malloc(size);
-    json[0] = '\0';
 
-    size_t json_len = 0;
-    memcpy(json + json_len, "{", 1);
-    json_len += 1;
 
-    for (long i = 0; i < num_items; i++) {
+    char* json_str = (char*)malloc(size);
+    if (!json_str) {
+        PyErr_SetString(PyExc_MemoryError, "Memory allocation failed");
+        Py_DECREF(items);
+        return NULL;
+    }
+    json_str[0] = '{';
+    json_str[1] = '\0';
+    size_t len = 1;
 
+
+    for (Py_ssize_t i = 0; i < num_items; i++) {
         PyObject* item = PyList_GetItem(items, i);
         PyObject* key = PyTuple_GetItem(item, 0);
         PyObject* value = PyTuple_GetItem(item, 1);
-
-        char* key_str = PyUnicode_AsUTF8(key);
+        const char* key_str = PyUnicode_AsUTF8(key);
         size_t key_len = strlen(key_str);
 
-        memcpy(json + json_len, "\"", 1);
-        memcpy(json + json_len + 1, key_str, key_len);
-        memcpy(json + json_len + 1 + key_len, "\":", 2);
-
-        json_len += key_len + 3;
+        snprintf(json_str + len, size - len, "\"%.*s\":", (int)key_len, key_str);
+        len += key_len + 3;
 
         if (PyLong_Check(value)) {
-            long value_long = PyLong_AsLong(value);
-            char value_str[25];
-            int value_len = snprintf(value_str, sizeof(value_str), "%ld", value_long);
-
-            memcpy(json + json_len, value_str, value_len);
-
-            json_len += value_len;
-
-        }
-        else {
-            char* value_str = PyUnicode_AsUTF8(value);
+            char buf[25];
+            snprintf(buf, sizeof(buf), "%ld", PyLong_AsLong(value));
+            strcat(json_str + len, buf);
+            len += strlen(buf);
+        } else {
+            const char* value_str = PyUnicode_AsUTF8(value);
             size_t value_len = strlen(value_str);
-
-            memcpy(json + json_len, "\"", 1);
-            memcpy(json + json_len + 1, value_str, value_len);
-            memcpy(json + json_len + 1 + value_len, "\"", 1);
-
-            json_len += value_len + 2;
+            snprintf(json_str + len, size - len, "\"%.*s\"", (int)value_len, value_str);
+            len += value_len + 2;
         }
 
         if (i < num_items - 1) {
-            memcpy(json + json_len, ",", 1);
-            json_len += 1;
+            strcat(json_str + len, ",");
+            len++;
         }
     }
-
-    memcpy(json + json_len, "}", 1);
-
-    json_len += 1;
-    json[json_len] = '\0';
+    strcat(json_str + len, "}");
 
     Py_DECREF(items);
-    return Py_BuildValue("s", json);
-};
+    PyObject* result = Py_BuildValue("s", json_str);
+    free(json_str);
+    return result;
+}
 
-//final stage
 static PyMethodDef custom_json_methods[] = {
     {"loads", custom_json_loads, METH_VARARGS, "Deserialize JSON string to dictionary"},
     {"dumps", custom_json_dumps, METH_VARARGS, "Serialize dictionary to JSON string"},
@@ -311,9 +242,8 @@ static struct PyModuleDef custom_json_module = {
     NULL,
     -1,
     custom_json_methods
-
 };
 
 PyMODINIT_FUNC PyInit_custom_json(void) {
     return PyModule_Create(&custom_json_module);
-};
+}

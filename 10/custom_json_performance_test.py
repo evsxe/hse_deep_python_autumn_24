@@ -15,7 +15,7 @@ def benchmark(func, *args):
     return times
 
 
-json_files = [f'./test_jsons/test_json_{digit}.json' for digit in range(1, 3)]
+json_files = [f'./test_jsons/test_json_{idx}.json' for idx in range(1, 4)]
 
 results = {
     'loads': {
