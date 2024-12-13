@@ -9,7 +9,7 @@ def main():
         ext_modules=[
             Extension(
                 'custom_json',
-                ['./custom_json.c']
+                ['.10/custom_json.c']
             )
         ]
     )
