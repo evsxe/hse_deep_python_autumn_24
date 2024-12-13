@@ -2,9 +2,9 @@ name: Validation
 
 on:
   push:
-    branches: [ "main", "hw-10" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main", "hw-10" ]
+    branches: [ "main" ]
 
   workflow_dispatch:
 
