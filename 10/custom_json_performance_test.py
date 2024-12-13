@@ -80,8 +80,8 @@ for json_file in json_files:
     print(f"Finished benchmarking file: {json_file}")
 
 
-def print_results(results):
-    for operation, libs in results.items():
+def print_results(res):
+    for operation, libs in res.items():
         print(
             f"====================={operation.upper()}=====================")
         for lib, times in libs.items():
