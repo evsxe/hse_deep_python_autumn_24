@@ -23,6 +23,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Install custom_json
+        run: python3 ./10/setup.py
+
       - name: Check flake8
         run: flake8 .
 
