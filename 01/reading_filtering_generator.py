@@ -12,16 +12,16 @@ def reading_filtering_generator(
     :param search_words: a list of words to search for.
     :param stop_words: stop word list.
     :yields: lines from the file containing at least one word
-                from the search list and no stop words.
+                from the search list and no stop words.  Case-insensitive.
     """
 
-    search_words = set(search_words)
-    stop_words = set(stop_words)
+    search_words = {word.lower() for word in search_words}
+    stop_words = {word.lower() for word in stop_words}
 
     def row_filter(row: str) -> str:
         words = row.lower().split()
-        exist_search_words = any(word in words for word in search_words)
-        exist_stop_words = any(word in words for word in stop_words)
+        exist_search_words = any(word in search_words for word in words)
+        exist_stop_words = any(word in stop_words for word in words)
         if exist_search_words and not exist_stop_words:
             yield row
 

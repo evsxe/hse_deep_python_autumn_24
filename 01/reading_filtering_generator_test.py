@@ -203,6 +203,47 @@ class ReadingFilteringGeneratorTest(unittest.TestCase):
 
         self.assertEqual(list(generator), ["apple"])
 
+    def test_case_insensitive_search(self):
+        """Checks that the search is case-insensitive."""
+        file_obj = io.StringIO()
+        test_data = [
+            "This line has Apple\n",
+            "and this one has bAnana\n",
+            "THIS LINE HAS APPLE AND BANANA\n"
+        ]
+        file_obj.writelines(test_data)
+        file_obj.seek(0)
+
+        generator = reading_filtering_generator(
+            file_obj,
+            ['apple', 'banana'],
+            []
+        )
+
+        self.assertEqual(list(generator), [
+            "This line has Apple\n",
+            "and this one has bAnana\n",
+            "THIS LINE HAS APPLE AND BANANA\n"
+        ])
+
+    def test_case_insensitive_stop_words(self):
+        """Checks that stop word filtering is case-insensitive."""
+        file_obj = io.StringIO()
+        test_data = [
+            "This line has apple but also StOp\n",
+            "This line has APPLE and sTop\n"
+        ]
+        file_obj.writelines(test_data)
+        file_obj.seek(0)
+
+        generator = reading_filtering_generator(
+            file_obj,
+            ['apple'],
+            ['stop']
+        )
+
+        self.assertEqual(list(generator), [])
+
 
 if __name__ == '__main__':
     unittest.main()
