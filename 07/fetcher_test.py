@@ -45,15 +45,29 @@ class TestURLFetcher(unittest.TestCase):
     @patch('aiohttp.ClientSession')
     async def test_fetch_url_timeout_error(self, mock_session):
         mock_url = 'https://example.com'
-        mock_response = AsyncMock()
-        mock_response.status = 200
-        mock_response.text = AsyncMock(side_effect=asyncio.TimeoutError)
-        mock_session.return_value.__aenter__.return_value = mock_response
+        mock_session.return_value.__aenter__.side_effect = asyncio.TimeoutError
 
         with patch('builtins.print') as mock_print:
             await self.fetcher.fetch_url(mock_session, mock_url)
 
         mock_print.assert_called_once_with(f"Timeout error for {mock_url}")
+
+    @patch('aiohttp.ClientSession')
+    async def test_fetch_url_http_error(self, mock_session):
+        mock_url = 'https://example.com'
+        mock_response = AsyncMock()
+        mock_response.status = 404
+        mock_response.text.return_value = asyncio.Future()
+        mock_response.text.return_value.set_result('Not Found')
+        mock_session.return_value.__aenter__.return_value = mock_response
+
+        with patch('builtins.print') as mock_print:
+            await self.fetcher.fetch_url(mock_session, mock_url)
+
+        mock_print.assert_called_once_with(
+            f"HTTP error for {mock_url}: 404 ClientResponseError: 404 Not Found"
+        )
+
 
     @patch('aiohttp.ClientSession')
     async def test_fetch_all_urls_success(self, mock_session):
@@ -115,6 +129,12 @@ class TestURLFetcher(unittest.TestCase):
         mock_print.assert_any_call(
             f"Timeout error for {mock_url_3}"
         )
+
+    @patch('aiohttp.ClientSession')
+    async def test_fetch_all_urls_empty_list(self):
+        with patch('builtins.print') as mock_print:
+            await self.fetcher.fetch_all_urls([])
+        mock_print.assert_not_called()
 
 
 if __name__ == '__main__':
