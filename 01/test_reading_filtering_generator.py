@@ -244,6 +244,73 @@ class ReadingFilteringGeneratorTest(unittest.TestCase):
 
         self.assertEqual(list(generator), [])
 
+    def test_large_file(self):
+        """Checks performance with a large file."""
+        file_obj = io.StringIO()
+        test_data = ["This line has apple\n"] * 10000
+        file_obj.writelines(test_data)
+        file_obj.seek(0)
+
+        generator = reading_filtering_generator(file_obj,
+                                                ['apple'],
+                                                [])
+        self.assertEqual(len(list(generator)), 10000)
+
+    def test_mixed_case_search_and_stop(self):
+        """Tests mixed case search words and stop words."""
+        file_obj = io.StringIO("This Line has APPLE and STOP")
+        generator = reading_filtering_generator(file_obj,
+                                                ["apple"],
+                                                ["stop"])
+        self.assertEqual(list(generator), [])
+
+    def test_search_word_in_stop_words(self):
+        """Tests scenario where a search word is also a stop word."""
+        file_obj = io.StringIO("This line has apple")
+        generator = reading_filtering_generator(file_obj, ["apple"], ["apple"])
+        self.assertEqual(list(generator), [])
+
+    def test_multiple_stop_words_in_one_line(self):
+        """Tests multiple stop words within a single line."""
+        file_obj = io.StringIO("This line has apple and stop and anotherstop")
+        generator = reading_filtering_generator(
+            file_obj,
+            ["apple"],
+            ["stop", "anotherstop"]
+        )
+        self.assertEqual(list(generator), [])
+
+    def test_leading_and_trailing_whitespace(self):
+        """Tests lines with leading/trailing whitespace."""
+        file_obj = io.StringIO("  This line has apple  \n")
+        generator = reading_filtering_generator(file_obj,
+                                                ["apple"],
+                                                [])
+
+        self.assertEqual(list(generator), ["  This line has apple  \n"])
+
+    def test_non_ascii_characters(self):
+        """Tests handling of non-ASCII characters
+         (if your system supports it)."""
+        file_obj = io.StringIO(
+            "This line has an apple and some éàç characters.")
+        generator = reading_filtering_generator(file_obj,
+                                                ["apple"],
+                                                [])
+        self.assertEqual(
+            list(generator),
+            ["This line has an apple and some éàç characters."]
+        )
+
+    def test_empty_search_and_stop_words(self):
+        """ Test case with both search_words and stop_words are empty"""
+        file_obj = io.StringIO("This is a test line.")
+        generator = reading_filtering_generator(file_obj,
+                                                [],
+                                                [])
+
+        self.assertEqual(list(generator), [])
+
 
 if __name__ == '__main__':
     unittest.main()
