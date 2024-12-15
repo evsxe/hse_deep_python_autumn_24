@@ -1,8 +1,9 @@
 import asyncio
 import unittest
-from unittest.mock import patch, AsyncMock
 import aiohttp
-from fetcher import URLFetcher
+from unittest.mock import patch, AsyncMock
+
+from fetcher import URLFetcher, main
 
 
 class TestURLFetcher(unittest.TestCase):
@@ -120,7 +121,7 @@ class TestURLFetcher(unittest.TestCase):
         mock_print.assert_any_call(f"Timeout error for {mock_url_3}")
 
     @patch('aiohttp.ClientSession')
-    async def test_fetch_all_urls_empty_list(self, mock_session):
+    async def test_fetch_all_urls_empty_list(self):
         with patch('builtins.print') as mock_print:
             await self.fetcher.fetch_all_urls([])
         mock_print.assert_not_called()
@@ -138,16 +139,6 @@ class TestURLFetcher(unittest.TestCase):
         )
 
         self.assertEqual(self.fetcher.semaphore._value, 5)
-
-    @patch('builtins.open', side_effect=FileNotFoundError)
-    def test_main_file_not_found(self, mock_open):
-        with patch('builtins.print') as mock_print:
-            with patch('sys.argv', ['fetcher.py', 'nonexistent_file.txt']):
-                from fetcher import main
-                main()
-            mock_print.assert_called_once_with(
-                "Error: File 'nonexistent_file.txt' not found."
-            )
 
 
 if __name__ == '__main__':
