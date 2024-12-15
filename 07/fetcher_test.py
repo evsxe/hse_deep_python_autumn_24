@@ -51,6 +51,23 @@ class TestURLFetcher(unittest.TestCase):
         mock_print.assert_called_once_with(f"Timeout error for {mock_url}")
 
     @patch('aiohttp.ClientSession')
+    async def test_fetch_http_error(self, mock_session):
+        mock_url = 'https://example.com'
+        mock_response = AsyncMock()
+        mock_response.status = 404
+        mock_response.text.return_value = asyncio.Future()
+        mock_response.text.return_value.set_result('Not Found')
+        mock_response.__aexit__.return_value = None
+        mock_session.return_value.__aenter__.return_value = mock_response
+
+        with patch('builtins.print') as mock_print:
+            await self.fetcher.fetch_url(mock_session, mock_url)
+
+        mock_print.assert_called_once_with(
+            f"HTTP error for {mock_url}: 404 Client Error"
+        )  # aiohttp.ClientResponseError includes status
+
+    @patch('aiohttp.ClientSession')
     async def test_fetch_all_success(self, mock_session):
         mock_url_1 = 'https://example.com/1'
         mock_url_2 = 'https://example.com/2'
@@ -102,6 +119,12 @@ class TestURLFetcher(unittest.TestCase):
         mock_print.assert_any_call(
             f"Fetched {mock_url_1} with status 200 and length 10")
         mock_print.assert_any_call(f"Connection error for {mock_url_2}")
+
+    @patch('aiohttp.ClientSession')
+    async def test_fetch_all_empty_urls(self):
+        with patch('builtins.print') as mock_print:
+            await self.fetcher.fetch_all_urls([])
+        mock_print.assert_not_called()
 
 
 if __name__ == '__main__':
