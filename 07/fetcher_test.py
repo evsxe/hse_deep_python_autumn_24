@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import patch, AsyncMock
 import aiohttp
 
-from fetcher import URLFetcher
+from fetcher import URLFetcher, main
 
 
 class TestURLFetcher(unittest.TestCase):
@@ -121,7 +121,7 @@ class TestURLFetcher(unittest.TestCase):
         mock_print.assert_any_call(f"Timeout error for {mock_url_3}")
 
     @patch('aiohttp.ClientSession')
-    async def test_fetch_all_urls_empty_list(self):
+    async def test_fetch_all_urls_empty_list(self, mock_session):
         with patch('builtins.print') as mock_print:
             await self.fetcher.fetch_all_urls([])
         mock_print.assert_not_called()
@@ -130,8 +130,7 @@ class TestURLFetcher(unittest.TestCase):
     async def test_semaphore_limit(self, mock_session):
         mock_url = 'https://example.com'
         mock_response = AsyncMock(status=200, text=AsyncMock(return_value=''))
-        mock_session.return_value.__aenter__.return_value = mock_response  #
-        # pylint: disable=all
+        mock_session.return_value.__aenter__.return_value = mock_response
 
         self.assertEqual(self.fetcher.semaphore._value, 5)
 
@@ -139,8 +138,53 @@ class TestURLFetcher(unittest.TestCase):
             *[self.fetcher.fetch_url(mock_session, mock_url) for _ in range(6)]
         )
 
-        self.assertEqual(self.fetcher.semaphore._value, 5)  # pylint:
-        # disable=all
+        self.assertEqual(self.fetcher.semaphore._value, 5)
+
+    @patch('builtins.open', side_effect=FileNotFoundError)
+    def test_main_file_not_found(self, mock_open):
+        with patch('sys.argv', ['fetcher.py', 'nonexistent_file.txt']):
+            with patch('builtins.print') as mock_print:
+                main()  # pylint: disable=undefined-variable
+        mock_open.assert_called_once()
+        mock_print.assert_called_once_with(
+            "Error: File 'nonexistent_file.txt' not found."
+        )
+
+    def test_main_invalid_args(self):
+        with patch('sys.argv', ['fetcher.py', '-c', 'abc']):
+            with self.assertRaises(SystemExit):
+                main()  # pylint: disable=undefined-variable
+
+        with patch('sys.argv', ['fetcher.py']):
+            with self.assertRaises(SystemExit):
+                main()  # pylint: disable=undefined-variable
+
+    @patch('aiohttp.ClientSession')
+    async def test_fetch_all_urls_mixed_results(self, mock_session):
+        urls = ['https://example.com/1',
+                'https://example.com/2',
+                'https://example.com/3']
+        responses = [
+            AsyncMock(status=200, text=AsyncMock(return_value='Response 1')),
+            AsyncMock(side_effect=aiohttp.ClientConnectionError),
+            AsyncMock(status=404, text=AsyncMock(return_value='Not Found'))
+        ]
+        mock_session.return_value.__aenter__.side_effect = responses
+
+        with patch('builtins.print') as mock_print:
+            await self.fetcher.fetch_all_urls(urls)
+
+        mock_print.assert_any_call(
+            f"Fetched https://example.com/1 with status 200 and length 10"
+        )
+        mock_print.assert_any_call(
+            f"Connection error for https://example.com/2:"
+            f" ClientConnectionError()"
+        )
+        mock_print.assert_any_call(
+            f"HTTP error for https://example.com/3:"
+            f" 404 ClientResponseError: 404 Not Found"
+        )
 
 
 if __name__ == '__main__':
