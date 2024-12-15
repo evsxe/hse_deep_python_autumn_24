@@ -1,6 +1,4 @@
 class CustomList(list):
-    def __init__(self, *args):
-        super().__init__(*args)
 
     def __add__(self, other):
         if isinstance(other, (list, CustomList)):
