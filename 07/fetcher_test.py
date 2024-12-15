@@ -1,63 +1,120 @@
+import asyncio
 import unittest
 from unittest.mock import patch, AsyncMock
+import aiohttp
+from fetcher import URLFetcher
 
-from fetcher import fetch_urls, fetch_url
 
+class TestURLFetcher(unittest.TestCase):
+    def setUp(self):
+        self.fetcher = URLFetcher(
+            max_concurrent_requests=5,
+            timeout=2
+        )
 
-class TestFetcher(unittest.IsolatedAsyncioTestCase):
-
-    @patch('fetcher.aiohttp')
-    async def test_fetch_url_client_error(self, mock_aiohttp):
-        mock_session = AsyncMock()
+    @patch('aiohttp.ClientSession')
+    async def test_fetch_url_success(self, mock_session):
+        mock_url = 'https://example.com'
         mock_response = AsyncMock()
-        mock_response.status = 500
-        mock_response.text = AsyncMock(return_value="Error text")
-        mock_session.get = AsyncMock(return_value=mock_response)
-        mock_aiohttp.ClientSession = AsyncMock(return_value=mock_session)
-        mock_aiohttp.ClientError = Exception
+        mock_response.status = 200
+        mock_response.text.return_value = asyncio.Future()
+        mock_response.text.return_value.set_result('Hello, World!')
+        mock_session.return_value.__aenter__.return_value = mock_response
 
-        with patch('fetcher.logging.error') as mock_log:
-            status, content = await fetch_url(mock_session, "bad_url")
-            self.assertIsNone(status)
-            self.assertIsNone(content)
-            mock_log.assert_called_once()
+        with patch('builtins.print') as mock_print:
+            await self.fetcher.fetch_url(mock_session, mock_url)
 
-    @patch('fetcher.fetch_url')
-    async def test_fetch_urls_success(self, mock_fetch_url):
-        mock_fetch_url.side_effect = [
-            (200, "Content 1"), (201, "Content 2"), (404, "Content 3")
+        mock_print.assert_called_once_with(
+            f"Fetched {mock_url} with status 200 and length 13"
+        )
+
+    @patch('aiohttp.ClientSession')
+    async def test_fetch_url_connection_error(self, mock_session):
+        mock_url = 'https://example.com'
+        mock_session.return_value.__aenter__.side_effect = (
+            aiohttp.ClientConnectionError
+        )
+
+        with patch('builtins.print') as mock_print:
+            await self.fetcher.fetch_url(mock_session, mock_url)
+
+        mock_print.assert_called_once_with(
+            f"Connection error for {mock_url}"
+        )
+
+    @patch('aiohttp.ClientSession')
+    async def test_fetch_url_timeout_error(self, mock_session):
+        mock_url = 'https://example.com'
+        mock_response = AsyncMock()
+        mock_response.status = 200
+        mock_response.text = AsyncMock(side_effect=asyncio.TimeoutError)
+        mock_session.return_value.__aenter__.return_value = mock_response
+
+        with patch('builtins.print') as mock_print:
+            await self.fetcher.fetch_url(mock_session, mock_url)
+
+        mock_print.assert_called_once_with(f"Timeout error for {mock_url}")
+
+    @patch('aiohttp.ClientSession')
+    async def test_fetch_all_urls_success(self, mock_session):
+        mock_url_1 = 'https://example.com/1'
+        mock_url_2 = 'https://example.com/2'
+        mock_responses = [
+            AsyncMock(status=200, text=AsyncMock(return_value='Response 1')),
+            AsyncMock(status=200, text=AsyncMock(return_value='Response 2'))
         ]
-        urls = ["url1", "url2", "url3"]
-        results = await fetch_urls(urls, concurrent_requests=2)
-        self.assertEqual(len(results), 3)
-        self.assertEqual(results[0], (200, "Content 1"))
-        self.assertEqual(results[1], (201, "Content 2"))
-        self.assertEqual(results[2], (404, "Content 3"))
+        mock_session.return_value.__aenter__.side_effect = mock_responses
 
-    @patch('fetcher.fetch_url')
-    async def test_fetch_urls_empty_url(self, mock_fetch_url):
-        mock_fetch_url.return_value = (200, "Content")
-        urls = ["url1", "", "url3"]
-        results = await fetch_urls(urls, concurrent_requests=2)
-        self.assertEqual(len(results), 3)
-        self.assertIsNone(results[1])
+        with patch('builtins.print') as mock_print:
+            await self.fetcher.fetch_all_urls([mock_url_1, mock_url_2])
 
-    @patch('fetcher.fetch_url')
-    async def test_fetch_urls_all_failures(self, mock_fetch_url):
-        mock_fetch_url.return_value = (None, None)
-        urls = ["url1", "url2", "url3"]
-        results = await fetch_urls(urls, concurrent_requests=2)
-        self.assertEqual(len(results), 3)
-        self.assertEqual(results[0], (None, None))
-        self.assertEqual(results[1], (None, None))
-        self.assertEqual(results[2], (None, None))
+        mock_print.assert_any_call(
+            f"Fetched {mock_url_1} with status 200 and length 10"
+        )
 
-    @patch('fetcher.aiohttp')
-    async def test_fetch_urls_aiohttp_exception(self, mock_aiohttp):
-        mock_aiohttp.ClientSession.side_effect = Exception
-        urls = ["url1", "url2"]
-        with self.assertRaises(Exception):
-            await fetch_urls(urls, concurrent_requests=2)
+        mock_print.assert_any_call(
+            f"Fetched {mock_url_2} with status 200 and length 10"
+        )
+
+    @patch('aiohttp.ClientSession')
+    async def test_fetch_all_urls_multiple_failures(self, mock_session):
+        mock_url_1 = 'https://example.com/1'
+        mock_url_2 = 'https://example.com/2'
+        mock_url_3 = 'https://example.com/3'
+
+        mock_response_1 = AsyncMock(
+            status=200,
+            text=AsyncMock(return_value='Response 1')
+        )
+
+        mock_response_2 = AsyncMock(
+            side_effect=aiohttp.ClientConnectionError
+        )
+
+        mock_response_3 = AsyncMock(
+            side_effect=asyncio.TimeoutError
+        )
+
+        mock_session.return_value.__aenter__.side_effect = [
+            mock_response_1, mock_response_2, mock_response_3
+        ]
+
+        with patch('builtins.print') as mock_print:
+            await self.fetcher.fetch_all_urls(
+                [mock_url_1, mock_url_2, mock_url_3]
+            )
+
+        mock_print.assert_any_call(
+            f"Fetched {mock_url_1} with status 200 and length 10"
+        )
+
+        mock_print.assert_any_call(
+            f"Connection error for {mock_url_2}"
+        )
+
+        mock_print.assert_any_call(
+            f"Timeout error for {mock_url_3}"
+        )
 
 
 if __name__ == '__main__':

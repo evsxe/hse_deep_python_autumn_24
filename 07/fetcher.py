@@ -1,43 +1,48 @@
-import argparse
-
 import asyncio
-import logging
+import argparse
 import aiohttp
 
 
-async def fetch_url(session, url):
-    try:
-        async with session.get(url) as response:
-            status = response.status
-            content = await response.text()
-            return status, content
-    except aiohttp.ClientError as e:
-        logging.error(f"Error fetching {url}: {e}")  # pylint: disable=all
-        return None, None
+class URLFetcher:
+    def __init__(self, max_concurrent_requests: int, timeout: int):
+        """Initializes the URLFetcher with concurrency limits and timeout."""
+        self.max_concurrent_requests = max_concurrent_requests
+        self.semaphore = asyncio.Semaphore(max_concurrent_requests)
+        self.timeout = timeout
 
+    async def fetch_url(self, session: aiohttp.ClientSession, url: str) -> None:
+        """Fetches a single URL using the provided session."""
+        async with self.semaphore:
+            try:
+                async with session.get(url, timeout=self.timeout) as response:
+                    content_length = len(await response.text())
+                    print(f"Fetched {url} with status"
+                          f" {response.status} and length {content_length}")
 
-async def fetch_urls(urls, concurrent_requests):
-    async with aiohttp.ClientSession() as session:
-        semaphore = asyncio.Semaphore(concurrent_requests)
-        tasks = [
-            asyncio.ensure_future(fetch_one_url(session, url, semaphore))
-            for url in urls
-        ]
-        results = await asyncio.gather(*tasks)
-        return results
+            except aiohttp.ClientConnectionError as e:
+                print(f"Connection error for {url}: {e}")
 
+            except asyncio.TimeoutError:
+                print(f"Timeout error for {url}")
 
-async def fetch_one_url(session, url, semaphore):
-    async with semaphore:
-        url = url.strip()
-        if url:
-            return await fetch_url(session, url)
+            # Handle other HTTP errors
+            except aiohttp.ClientResponseError as e:
+                print(f"HTTP error for {url}: {e}")
+
+    async def fetch_all_urls(self, urls: list) -> None:
+        """Fetches all URLs concurrently."""
+        # Timeout is handled per request now.
+        async with aiohttp.ClientSession() as session:
+            tasks = [self.fetch_url(session, url) for url in urls]
+            await asyncio.gather(*tasks)
 
 
 def main():
+    """Parses command-line arguments and runs the URL fetcher."""
     parser = argparse.ArgumentParser(
         description="Asynchronous URL fetching."
     )
+
     parser.add_argument(
         "-c",
         "--concurrent",
@@ -45,38 +50,31 @@ def main():
         default=10,
         help="Number of concurrent requests (default: 10)."
     )
+
     parser.add_argument(
         "url_file",
         type=str,
         help="Path to the file containing URLs."
     )
-    args = parser.parse_args()
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s'
+
+    parser.add_argument(
+        '-t', '--timeout',
+        type=int,
+        default=5,
+        help=f"Timeout for each request in seconds (default: 5)"
     )
+
+    args = parser.parse_args()
+
     try:
         with open(args.url_file, "r", encoding='utf-8') as f:
             urls = f.readlines()
     except FileNotFoundError:
-        logging.error(f"File {args.url_file} not found.")  # pylint: disable=all
+        print(f"Error: File '{args.url_file}' not found.")
         return
 
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    results = loop.run_until_complete(
-        fetch_urls(urls, args.concurrent)
-    )
-    loop.close()
-
-    for i, (status, _) in enumerate(results):
-        if status:
-            print(f"URL: {urls[i].strip()}")
-            print(f"Status: {status}")
-            print("---")
+    fetcher = URLFetcher(args.max_concurrent_requests, args.timeout)
+    asyncio.run(fetcher.fetch_all_urls(urls))
 
 
 if __name__ == "__main__":
