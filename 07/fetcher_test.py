@@ -2,7 +2,6 @@ import asyncio
 import unittest
 from unittest.mock import patch, AsyncMock
 import aiohttp
-import sys
 
 from fetcher import URLFetcher, main
 
@@ -149,12 +148,18 @@ class TestURLFetcher(unittest.TestCase):
                               'get',
                               return_value=mock_response):
 
-                self.assertEqual(self.fetcher.semaphore._value, 5)
+                self.assertEqual(
+                    self.fetcher.semaphore._value,
+                    5
+                )  # pylint: disable=all
                 await asyncio.gather(
                     *[self.fetcher.fetch_url(session, mock_url) for _ in
                       range(6)]
                 )
-                self.assertEqual(self.fetcher.semaphore._value, 5)
+                self.assertEqual(
+                    self.fetcher.semaphore._value,
+                    5
+                )  # pylint: disable=all
 
     def test_main_invalid_args(self):
         with patch('sys.argv', ['fetcher.py', '-c', 'abc']):
