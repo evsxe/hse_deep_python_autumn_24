@@ -121,7 +121,7 @@ class TestURLFetcher(unittest.TestCase):
         mock_print.assert_any_call(f"Timeout error for {mock_url_3}")
 
     @patch('aiohttp.ClientSession')
-    async def test_fetch_all_urls_empty_list(self, mock_session):
+    async def test_fetch_all_urls_empty_list(self):
         with patch('builtins.print') as mock_print:
             await self.fetcher.fetch_all_urls([])
         mock_print.assert_not_called()
@@ -132,13 +132,15 @@ class TestURLFetcher(unittest.TestCase):
         mock_response = AsyncMock(status=200, text=AsyncMock(return_value=''))
         mock_session.return_value.__aenter__.return_value = mock_response
 
-        self.assertEqual(self.fetcher.semaphore._value, 5)
+        self.assertEqual(self.fetcher.semaphore._value,
+                         5)  # pylint: disable=all
 
         await asyncio.gather(
             *[self.fetcher.fetch_url(mock_session, mock_url) for _ in range(6)]
         )
 
-        self.assertEqual(self.fetcher.semaphore._value, 5)
+        self.assertEqual(self.fetcher.semaphore._value,
+                         5)  # pylint: disable=all
 
     @patch('builtins.open', side_effect=FileNotFoundError)
     def test_main_file_not_found(self, mock_open):
@@ -164,26 +166,28 @@ class TestURLFetcher(unittest.TestCase):
         urls = ['https://example.com/1',
                 'https://example.com/2',
                 'https://example.com/3']
+
         responses = [
             AsyncMock(status=200, text=AsyncMock(return_value='Response 1')),
             AsyncMock(side_effect=aiohttp.ClientConnectionError),
             AsyncMock(status=404, text=AsyncMock(return_value='Not Found'))
         ]
+
         mock_session.return_value.__aenter__.side_effect = responses
 
         with patch('builtins.print') as mock_print:
             await self.fetcher.fetch_all_urls(urls)
 
         mock_print.assert_any_call(
-            f"Fetched https://example.com/1 with status 200 and length 10"
+            "Fetched https://example.com/1 with status 200 and length 10"
         )
         mock_print.assert_any_call(
-            f"Connection error for https://example.com/2:"
-            f" ClientConnectionError()"
+            "Connection error for https://example.com/2:"
+            " ClientConnectionError()"
         )
         mock_print.assert_any_call(
-            f"HTTP error for https://example.com/3:"
-            f" 404 ClientResponseError: 404 Not Found"
+            "HTTP error for https://example.com/3:"
+            " 404 ClientResponseError: 404 Not Found"
         )
 
 
