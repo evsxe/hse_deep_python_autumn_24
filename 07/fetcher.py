@@ -58,10 +58,10 @@ def main():
     )
 
     parser.add_argument(
-        '-t', '--timeout',
+        "-t", "--timeout",
         type=int,
         default=5,
-        help=f"Timeout for each request in seconds (default: 5)"
+        help="Timeout for each request in seconds (default: 5)"
     )
 
     args = parser.parse_args()
