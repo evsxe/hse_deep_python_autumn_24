@@ -1,9 +1,9 @@
 import asyncio
 import unittest
-import aiohttp
 from unittest.mock import patch, AsyncMock
+import aiohttp
 
-from fetcher import URLFetcher, main
+from fetcher import URLFetcher
 
 
 class TestURLFetcher(unittest.TestCase):
@@ -130,7 +130,8 @@ class TestURLFetcher(unittest.TestCase):
     async def test_semaphore_limit(self, mock_session):
         mock_url = 'https://example.com'
         mock_response = AsyncMock(status=200, text=AsyncMock(return_value=''))
-        mock_session.return_value.__aenter__.return_value = mock_response
+        mock_session.return_value.__aenter__.return_value = mock_response  #
+        # pylint: disable=all
 
         self.assertEqual(self.fetcher.semaphore._value, 5)
 
@@ -138,7 +139,8 @@ class TestURLFetcher(unittest.TestCase):
             *[self.fetcher.fetch_url(mock_session, mock_url) for _ in range(6)]
         )
 
-        self.assertEqual(self.fetcher.semaphore._value, 5)
+        self.assertEqual(self.fetcher.semaphore._value, 5)  # pylint:
+        # disable=all
 
 
 if __name__ == '__main__':
