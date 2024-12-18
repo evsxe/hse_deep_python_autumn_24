@@ -15,14 +15,9 @@ class TestCustomJson(unittest.TestCase):
         ]
 
         for case in valid_cases:
-            try:
-                expected = json.loads(case)
-                actual = custom_json.loads(case)
-                self.assertEqual(expected, actual, f"Failed for input: {case}")
-            except ValueError as e:
-                self.fail(
-                    f"Unexpected ValueError for valid JSON: {case}, {e}"
-                )
+            expected = json.loads(case)
+            actual = custom_json.loads(case)
+            self.assertEqual(expected, actual, f"Failed for input: {case}")
 
     def test_loads_dumps_roundtrip(self):
         data_cases = [
