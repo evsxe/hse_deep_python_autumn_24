@@ -2,80 +2,51 @@ import asyncio
 import argparse
 import aiohttp
 
+TIMEOUT = 5
+
 
 class URLFetcher:
-    def __init__(self, max_concurrent_requests: int, timeout: int):
-        """Initializes the URLFetcher with concurrency limits and timeout."""
-        self.max_concurrent_requests = max_concurrent_requests
-        self.semaphore = asyncio.Semaphore(max_concurrent_requests)
+    def __init__(self, concurrency: int, timeout: int):
+        self.concurrency = concurrency
+        self.semaphore = asyncio.Semaphore(concurrency)
         self.timeout = timeout
 
-    async def fetch_url(self, session: aiohttp.ClientSession, url: str) -> None:
-        """Fetches a single URL using the provided session."""
+    async def fetch(self, session: aiohttp.ClientSession, url: str) -> None:
         async with self.semaphore:
             try:
-                async with session.get(url, timeout=self.timeout) as response:
-                    content_length = len(await response.text())
-                    print(f"Fetched {url} with status"
-                          f" {response.status} and length {content_length}")
-
-            except aiohttp.ClientConnectionError as e:
-                print(f"Connection error for {url}: {e}")
-
+                async with session.get(url) as response:
+                    content = await response.text()
+                    print(
+                        f"Fetched {url} with status \
+                        {response.status} and length \
+                          {len(content)}")
+            except aiohttp.ClientConnectionError:
+                print(f"Connection error for {url}")
             except asyncio.TimeoutError:
                 print(f"Timeout error for {url}")
 
-            # Handle other HTTP errors
-            except aiohttp.ClientResponseError as e:
-                print(f"HTTP error for {url}: {e}")
-
-    async def fetch_all_urls(self, urls: list) -> None:
-        """Fetches all URLs concurrently."""
-        # Timeout is handled per request now.
-        async with aiohttp.ClientSession() as session:
-            tasks = [self.fetch_url(session, url) for url in urls]
+    async def fetch_all(self, urls: list):
+        timeout = aiohttp.ClientTimeout(total=self.timeout)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            tasks = [self.fetch(session, url) for url in urls]
             await asyncio.gather(*tasks)
 
 
-def main():
-    """Parses command-line arguments and runs the URL fetcher."""
-    parser = argparse.ArgumentParser(
-        description="Asynchronous URL fetching."
-    )
+def main(concurrency: int, timeout: int, file_name: str):
+    with open(file_name, 'r', encoding='utf-8') as f:
+        urls = [line.strip() for line in f if line.strip()]
 
-    parser.add_argument(
-        "-c",
-        "--concurrent",
-        type=int,
-        default=10,
-        help="Number of concurrent requests (default: 10)."
-    )
-
-    parser.add_argument(
-        "url_file",
-        type=str,
-        help="Path to the file containing URLs."
-    )
-
-    parser.add_argument(
-        "-t", "--timeout",
-        type=int,
-        default=5,
-        help="Timeout for each request in seconds (default: 5)"
-    )
-
-    args = parser.parse_args()
-
-    try:
-        with open(args.url_file, "r", encoding='utf-8') as f:
-            urls = f.readlines()
-    except FileNotFoundError:
-        print(f"Error: File '{args.url_file}' not found.")
-        return
-
-    fetcher = URLFetcher(args.max_concurrent_requests, args.timeout)
-    asyncio.run(fetcher.fetch_all_urls(urls))
+    fetcher = URLFetcher(concurrency, timeout)
+    asyncio.run(fetcher.fetch_all(urls))
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'concurrency',
+        type=int
+    )
+    parser.add_argument('file', type=str)
+
+    args = parser.parse_args()
+    main(args.concurrency, TIMEOUT, args.file)
