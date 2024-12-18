@@ -35,7 +35,6 @@ class TestCustomJson(unittest.TestCase):
         self.assertEqual(custom_json.dumps({}), "{}")
 
     def test_dumps_various_types(self):
-        # Test various data types that `dumps` should handle
         self.assertEqual(custom_json.dumps({"a": 1}), '{"a":1}')
         self.assertEqual(custom_json.dumps({"a": "hello"}), '{"a":"hello"}')
         self.assertEqual(custom_json.dumps({"a": -123}), '{"a":-123}')
