@@ -16,11 +16,9 @@ class URLFetcher:
             try:
                 async with session.get(url) as response:
                     content = await response.text()
-                    print(
-                        f"Fetched {url} with status \
+                    print(f"Fetched {url} with status \
                         {response.status} and length \
-                          {len(content)}"
-                    )
+                          {len(content)}")
             except aiohttp.ClientConnectionError:
                 print(f"Connection error for {url}")
             except asyncio.TimeoutError:
@@ -33,7 +31,10 @@ class URLFetcher:
             await asyncio.gather(*tasks)
 
 
-def main(concurrency: int, timeout: int, file_name: str):
+def main(concurrency: int,
+         timeout: int,
+         file_name: str) -> None:
+
     with open(file_name, 'r', encoding='utf-8') as f:
         urls = [line.strip() for line in f if line.strip()]
 
