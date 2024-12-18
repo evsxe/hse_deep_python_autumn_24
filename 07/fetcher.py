@@ -19,7 +19,8 @@ class URLFetcher:
                     print(
                         f"Fetched {url} with status \
                         {response.status} and length \
-                          {len(content)}")
+                          {len(content)}"
+                    )
             except aiohttp.ClientConnectionError:
                 print(f"Connection error for {url}")
             except asyncio.TimeoutError:
