@@ -84,6 +84,14 @@ class TestRetryDeco(unittest.TestCase):
         result = raise_error()
         self.assertIsNone(result)
 
+    def test_allowed_exception(self):
+        @retry_deco(retries=2, exceptions=[ValueError])
+        def raise_value_error():
+            raise ValueError("This is an allowed error")
+
+        result = raise_value_error()
+        self.assertIsNone(result)
+
 
 if __name__ == '__main__':
     unittest.main()

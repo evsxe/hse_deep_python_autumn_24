@@ -23,15 +23,19 @@ def process_json(json_str: str,
     if tokens is None:
         tokens = []
 
+    if callback is None:
+        def default_callback(key_val, token_val):
+            return f"{key_val}: {token_val}"
+        callback = default_callback
+
     try:
         json_obj = json.loads(json_str)
     except json.decoder.JSONDecodeError as err:
         raise err
 
     for key, value in json_obj.items():
-        if key not in required_keys:
-            continue
+        if key in required_keys:
+            for token in tokens:
+                if token.lower() in value.lower():
+                    print(callback(key, token))
 
-        for token in tokens:
-            if token.lower() in value.lower():
-                print(callback(key, token))
