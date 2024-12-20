@@ -26,6 +26,7 @@ def process_json(json_str: str,
     if callback is None:
         def default_callback(key_val, token_val):
             return f"{key_val}: {token_val}"
+
         callback = default_callback
 
     try:
@@ -38,4 +39,3 @@ def process_json(json_str: str,
             for token in tokens:
                 if token.lower() in value.lower():
                     print(callback(key, token))
-

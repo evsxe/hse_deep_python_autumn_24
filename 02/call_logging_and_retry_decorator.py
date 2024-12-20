@@ -32,7 +32,7 @@ def retry_deco(retries: int = 3,
                     result = func(*args, **kwargs)
                     logging.info("result = %s", result)
                     return result
-                except Exception as err:
+                except (ValueError, TypeError) as err:
                     err_type = type(err)
                     logging.info("exception = %s", err_type.__name__)
                     if exceptions is not None and err_type not in exceptions:
