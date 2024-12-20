@@ -66,7 +66,6 @@ class TestData(unittest.TestCase):
 
     def test_invalid_updates(self):
         data_instance = Data(1, "Sample Item", 20)
-
         with self.assertRaises(ValueError):
             data_instance.num = 1.5
 
@@ -100,6 +99,44 @@ class TestData(unittest.TestCase):
         data_instance = Data(1, "Sample Item", 20)
         data_instance.update_price(30)
         self.assertEqual(data_instance.price, 30)
+
+    def test_independent_instances(self):
+        data1 = Data(1, "Item A", 10)
+        data2 = Data(2, "Item B", 20)
+
+        data1.num = 100
+        self.assertEqual(data1.num, 100)
+        self.assertEqual(data2.num,
+                         2)
+
+        with self.assertRaises(ValueError):
+            data1.name = ""
+        self.assertEqual(data1.name, "Item A")
+        self.assertEqual(data2.name, "Item B")
+
+    def test_failed_validation_does_not_change_value(self):
+        data = Data(1, "Item A", 10)
+        original_num = data.num
+        original_name = data.name
+        original_price = data.price
+
+        try:
+            data.num = "invalid"
+        except ValueError:
+            pass
+        self.assertEqual(data.num, original_num)
+
+        try:
+            data.name = ""
+        except ValueError:
+            pass
+        self.assertEqual(data.name, original_name)
+
+        try:
+            data.price = -5
+        except ValueError:
+            pass
+        self.assertEqual(data.price, original_price)
 
 
 if __name__ == '__main__':

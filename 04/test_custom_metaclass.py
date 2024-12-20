@@ -17,7 +17,12 @@ class TestCustomMeta(unittest.TestCase):
             def __str__(self):
                 return "Custom_by_metaclass"
 
-        CustomClass.custom_x = 50  # type: ignore
+        self.assertEqual(CustomClass.custom_x, 50)
+        with self.assertRaises(AttributeError):
+            _ = CustomClass.x
+
+        CustomClass.custom_x = 50  # pylint: disable=all
+
         self.assertEqual(CustomClass.custom_x, 50)
         with self.assertRaises(AttributeError):
             _ = CustomClass.x
@@ -127,6 +132,9 @@ class TestCustomMeta(unittest.TestCase):
         inst = CustomClass()
         self.assertEqual(len(inst), 5)
         self.assertEqual(inst.__getitem__(3), 6)
+        self.assertEqual(len(inst), 5)
+        self.assertEqual(inst[3], 6)
+
         with self.assertRaises(AttributeError):
             _ = inst.custom___len__  # pylint: disable=all
         with self.assertRaises(AttributeError):
@@ -137,7 +145,7 @@ class TestCustomMeta(unittest.TestCase):
             x = 10
 
         inst = CustomClass()
-        inst.x = 20  # this will set custom_x
+        inst.x = 20
         self.assertEqual(
             inst.custom_x,  # pylint: disable=all
             20

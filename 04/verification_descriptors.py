@@ -12,6 +12,11 @@ class BaseDescriptor:
             raise ValueError(f"Invalid value for {self.name}: {value}")
         instance.__dict__[self.name] = value
 
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        return instance.__dict__.get(self.name)
+
     def validate(self, value: any) -> bool:
         raise NotImplementedError("Subclasses must implement this method.")
 
