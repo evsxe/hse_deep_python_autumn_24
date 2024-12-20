@@ -1,10 +1,14 @@
 class CustomList(list):
+    def __init__(self, *args):
+        super().__init__(*args)
 
     def __add__(self, other):
         if isinstance(other, (list, CustomList)):
+            len_self = len(self)
+            len_other = len(other)
             result = [a + b for a, b in zip(self, other)]
-            result.extend(self[len(other):])
-            result.extend(other[len(self):])
+            result.extend(self[len_other:])
+            result.extend(other[len_self:])
             return CustomList(result)
         if isinstance(other, int):
             return CustomList([x + other for x in self])
@@ -15,9 +19,11 @@ class CustomList(list):
 
     def __sub__(self, other):
         if isinstance(other, (list, CustomList)):
+            len_self = len(self)
+            len_other = len(other)
             result = [a - b for a, b in zip(self, other)]
-            result.extend(self[len(other):])
-            result.extend([-b for b in other[len(self):]])
+            result.extend(self[len_other:])
+            result.extend([-b for b in other[len_self:]])
             return CustomList(result)
         if isinstance(other, int):
             return CustomList([x - other for x in self])
@@ -25,8 +31,9 @@ class CustomList(list):
 
     def __rsub__(self, other):
         if isinstance(other, (list, CustomList)):
+            len_self = len(self)
             result = [a - b for a, b in zip(other, self)]
-            result.extend(other[len(self):])
+            result.extend(other[len_self:])
             return CustomList(result)
         if isinstance(other, int):
             return CustomList([other - x for x in self])
@@ -34,7 +41,7 @@ class CustomList(list):
 
     def __eq__(self, other):
         if isinstance(other, (list, CustomList)):
-            return sum(self) == sum(other)
+            return list(self) == list(other)
         return False
 
     def __ne__(self, other):
