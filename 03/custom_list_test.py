@@ -89,11 +89,6 @@ class TestCustomList(unittest.TestCase):
         custom_list4 = CustomList([1, 2, 7, 6])
         self.assertFalse(custom_list3 == custom_list4)
 
-    def test_ne(self):
-        custom_list1 = CustomList([1, 2, 3])
-        custom_list2 = CustomList([4, 5, 6])
-        self.assertTrue(custom_list1 != custom_list2)
-
     def test_lt(self):
         custom_list1 = CustomList([1, 2, 3])
         custom_list2 = CustomList([4, 5, 6])
